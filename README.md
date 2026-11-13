@@ -13,7 +13,9 @@ Tables are created on first request. Favourites and highlights are stored per de
 Transcripts: upload an `.srt` / `.vtt` (from any transcription site) together with the audio file of the
 same name, or import / paste it later from the lesson page. `subs.js` converts it to timed lines.
 
-Listeners can download the audio and transcript, or save a lesson for offline listening.
+Listeners can download the audio and transcript, or save a lesson for offline listening; in a folder, "Select"
+lets them download several lessons as one ZIP (`zip.js`) or save / remove them offline. Every transfer shows a % toast.
+Audio keeps playing in a mini player while browsing. Light / dark mode is per device.
 `sw.js` (service worker) keeps the app and library available offline and plays saved lessons from Cache Storage.
 The site installs as an app (PWA) via `manifest.webmanifest`.
 

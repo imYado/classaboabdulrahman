@@ -6,13 +6,19 @@
 <title>Majlis al-Ilm</title>
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#1c1d1f">
+<script>try{if(localStorage.theme==='"light"')document.documentElement.dataset.theme='light'}catch(e){}</script>
 <link rel="apple-touch-icon" href="/icon-192.png">
 <script src="/subs.js"></script>
+<script src="/zip.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{color-scheme:dark;--bg:#1c1d1f;--s1:#242528;--s2:#2c2d31;--line:#38393e;--text:#e7e5e0;--mute:#94928c;--gold:#c9b27a;--edge:#6b6250;
-  --grad:linear-gradient(135deg,#6b6250 0%,#3d3e43 55%,#2c2d31 100%)}
+  --grad:linear-gradient(135deg,#6b6250 0%,#3d3e43 55%,#2c2d31 100%);
+  --ln0:#5f5e5b;--ln1:#85847f;--ln2:#b5b3ad;--hlbg:#c9b27a40;--hltx:#f3e7c8;--hover:#ffffff14;--shade:#000a;--chip:#c9b27a1f;--chipb:#c9b27a50;--sel:#c9b27a66}
+:root[data-theme=light]{color-scheme:light;--bg:#e8e7e4;--s1:#f3f2ef;--s2:#fbfaf8;--line:#d2d0ca;--text:#26272a;--mute:#6b6964;--gold:#8a6f35;--edge:#bba673;
+  --grad:linear-gradient(135deg,#e7dcc0 0%,#f3f2ef 55%,#fbfaf8 100%);
+  --ln0:#b3b1ab;--ln1:#8b8984;--ln2:#5b5a57;--hlbg:#c9b27a59;--hltx:#3b2f12;--hover:#0000000d;--shade:#0006;--chip:#8a6f351a;--chipb:#8a6f3555;--sel:#c9b27a80}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background:var(--bg);color:var(--text);font:16px/1.6 'IBM Plex Sans Arabic',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
@@ -60,7 +66,7 @@ input:focus,textarea:focus{border-color:var(--gold)}
 .crumbs button:hover{color:var(--gold)}
 .head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 20px}
 .head h1{font-size:2rem}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:12px}
 .card{display:flex;align-items:center;gap:14px;padding:16px;background:var(--s1);border:1px solid var(--line);border-radius:16px;cursor:pointer;transition:border-color .2s,transform .2s;outline:none}
 .card:hover,.card:focus-visible{background:var(--grad);border-color:var(--edge);transform:translateY(-2px)}
 .card .ic{width:50px;height:54px;border-radius:12px;display:grid;place-items:center;background:var(--s2);color:var(--gold);flex:none}
@@ -68,11 +74,11 @@ input:focus,textarea:focus{border-color:var(--gold)}
 .card .ic .i{width:26px;height:26px}
 .card .ic .no{font:700 1.6rem 'Amiri',serif;line-height:1}
 .meta{flex:1;min-width:0}
-.meta b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;font-weight:600;line-height:1.4;text-align:start}
+.meta b{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;font-weight:600;line-height:1.4;text-align:start}
 .meta small{color:var(--mute)}
 .acts{display:flex}
 .ib{background:none;border:0;color:var(--mute);width:34px;height:34px;display:grid;place-items:center;border-radius:8px;cursor:pointer}
-.ib:hover{color:var(--text);background:#ffffff14}
+.ib:hover{color:var(--text);background:var(--hover)}
 .fav.on{color:var(--gold)}
 .fav.on .i{fill:currentColor}
 .empty{text-align:center;color:var(--mute);padding:60px 16px;display:grid;justify-items:center;gap:10px}
@@ -82,7 +88,7 @@ input:focus,textarea:focus{border-color:var(--gold)}
 .hlhead{display:flex;align-items:center;gap:8px;background:none;border:0;color:var(--text);cursor:pointer;font:inherit;margin-bottom:10px}
 .hlhead .i{color:var(--gold)}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{background:#c9b27a1f;border:1px solid #c9b27a50;border-radius:10px;padding:6px 10px;cursor:pointer;display:flex;flex-direction:column}
+.chip{background:var(--chip);border:1px solid var(--chipb);border-radius:10px;padding:6px 10px;cursor:pointer;display:flex;flex-direction:column}
 .chip small{color:var(--mute);font-size:.8rem}
 
 /* player */
@@ -90,18 +96,20 @@ input:focus,textarea:focus{border-color:var(--gold)}
 .ptitle{flex:1;min-width:0;text-align:center}
 .ptitle small{display:block;color:var(--mute);font-size:.8rem}
 .ptitle b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;font:700 1.1rem/1.3 'Amiri',serif}
-#lyrics{flex:1;min-height:0;overflow-y:auto;padding:28vh 20px 40vh;max-width:780px;width:100%;margin:0 auto}
-.ln{font-size:clamp(1.35rem,4.5vw,2.1rem);font-weight:600;line-height:1.55;margin:0 0 .8em;color:#5f5e5b;transition:color .35s;cursor:pointer}
-.ln.past{color:#85847f}
+/* full-width scroller (scrollbar at the far edge); text stays in a centred 780px column */
+#lyrics{flex:1;min-height:0;overflow-y:auto;padding:28vh max(20px,calc(50% - 390px)) 40vh;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.ln{font-size:clamp(1.35rem,4.5vw,2.1rem);font-weight:600;line-height:1.55;margin:0 0 .8em;color:var(--ln0);transition:color .35s;cursor:pointer}
+.ln.past{color:var(--ln1)}
 .ln.on{color:var(--text)}
-.ln:hover{color:#b5b3ad}
+.ln:hover{color:var(--ln2)}
 .w{border-radius:6px;padding:0 2px;transition:background .2s}
-.w:hover{background:#ffffff14}
-.w.hl{background:#c9b27a40;color:#f3e7c8;border-radius:0}
+.w:hover{background:var(--hover)}
+.w.pick{outline:2px solid var(--gold);outline-offset:1px}
+.w.hl{background:var(--hlbg);color:var(--hltx);border-radius:0}
 .w.hl.s{border-start-start-radius:6px;border-end-start-radius:6px}
 .w.hl.e{border-start-end-radius:6px;border-end-end-radius:6px}
 .w.nt{text-decoration:underline dotted var(--gold);text-underline-offset:7px}
-.w::selection,.ln::selection{background:#c9b27a66}
+.w::selection,.ln::selection{background:var(--sel)}
 .hint2{font-size:.85rem;margin-bottom:2em;text-align:center}
 .dock{border-top:1px solid var(--line);padding:14px 16px calc(14px + env(safe-area-inset-bottom))}
 .prog,.controls{direction:ltr;max-width:640px;margin:0 auto;display:flex;align-items:center;gap:12px}
@@ -112,24 +120,60 @@ input:focus,textarea:focus{border-color:var(--gold)}
 .controls .i{width:26px;height:26px}
 .btn.play{width:66px;height:66px;border-radius:50%;padding:0;border-color:var(--edge)}
 .btn.play .i{width:28px;height:28px}
-.sheet{position:fixed;left:50%;transform:translateX(-50%);bottom:160px;width:min(520px,calc(100% - 32px));background:var(--s2);border:1px solid var(--line);border-radius:18px;padding:16px;display:grid;gap:12px;box-shadow:0 20px 50px #0009;z-index:10}
-.sheet .between{justify-content:space-between;align-items:center;flex-wrap:nowrap}
+.sheet{position:fixed;left:50%;transform:translateX(-50%);bottom:160px;width:min(520px,calc(100% - 32px));background:var(--s2);border:1px solid var(--line);border-radius:18px;padding:16px;display:grid;gap:12px;box-shadow:0 20px 50px var(--shade);z-index:10}
+.between{justify-content:space-between;align-items:center;flex-wrap:nowrap}
+.pill{position:fixed;left:50%;transform:translateX(-50%);bottom:170px;background:var(--s2);border:1px solid var(--edge);border-radius:99px;padding:8px 16px;font-size:.9rem;z-index:9;white-space:nowrap;box-shadow:0 8px 24px var(--shade)}
+.btn.on{background:var(--grad);border-color:var(--gold);color:var(--gold)}
+/* transfers (uploads / downloads / offline saves) with live % */
+#jobs{position:fixed;top:72px;inset-inline-end:16px;width:min(340px,calc(100% - 32px));display:grid;gap:8px;z-index:30;pointer-events:none}
+.job{background:var(--s2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.85rem;box-shadow:0 8px 24px var(--shade);pointer-events:auto}
+.job .row{gap:10px}
+.job span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.job b{font-variant-numeric:tabular-nums;color:var(--gold)}
+.job i{display:block;height:4px;border-radius:4px;background:var(--line);margin-top:8px;overflow:hidden}
+.job s{display:block;height:100%;width:0;background:var(--gold);transition:width .2s}
+.job.err b{color:#d98b7a}
+/* multi-select bar */
+#bulk{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom));width:min(720px,calc(100% - 32px));background:var(--s2);border:1px solid var(--edge);border-radius:16px;padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;z-index:20;box-shadow:0 12px 32px var(--shade)}
+#bulk .btn{padding:8px 12px;font-size:.9rem}
+.card .chk{width:22px;height:22px;border:2px solid var(--edge);border-radius:6px;flex:none;display:grid;place-items:center;color:var(--bg)}
+.card.chosen{border-color:var(--gold)}
+.card.chosen .chk{background:var(--gold);border-color:var(--gold)}
+.card .chk .i{width:16px;height:16px;stroke-width:3;opacity:0}
+.card.chosen .chk .i{opacity:1}
+#view:has(#bulk){padding-bottom:140px}
+/* mini player: keeps the lesson playing while browsing */
+#mini{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom));width:min(720px,calc(100% - 24px));display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--s2);border:1px solid var(--edge);border-radius:16px;box-shadow:0 12px 32px var(--shade);z-index:15;overflow:hidden}
+#mini[hidden]{display:none}
+#mini .mini-t{flex:1;min-width:0;text-align:start;background:none;border:0;color:inherit;cursor:pointer;font:inherit;padding:2px 4px}
+#mini .mini-t b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+#mini small{display:block;color:var(--mute);font-size:.75rem}
+#m-pp{width:42px;height:42px;border-radius:50%;border:1px solid var(--edge);color:var(--gold)}
+#m-bar{position:absolute;inset-inline-start:0;bottom:0;height:2px;background:var(--gold);width:0}
+#s-app:has(#mini:not([hidden])) #view{padding-bottom:110px}
+#s-app:has(#mini:not([hidden])) #bulk{bottom:calc(84px + env(safe-area-inset-bottom))}
+#s-app:has(#mini:not([hidden])) #view:has(#bulk){padding-bottom:200px}
 #sh-word{font-size:1.3rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
 dialog{margin:auto;background:var(--s2);color:var(--text);border:1px solid var(--line);border-radius:18px;padding:20px;width:min(560px,calc(100% - 32px))}
-dialog::backdrop{background:#000a}
+dialog::backdrop{background:var(--shade)}
 dialog form{display:grid;gap:12px}
 dialog .btn.wide{justify-content:flex-start}
 .btn:disabled{opacity:.45;pointer-events:none}
 .hint{font-size:.85rem;margin:-10px 0 18px}
-@media (max-width:420px){.btn.icon{width:38px;height:38px}.brand{font-size:1.1rem}}
-/* phones: several action buttons move to their own row so the name gets the full width */
+/* cards with several action buttons put them on their own row, so the name gets the full width (phone and laptop) */
+.card:has(.acts .ib + .ib){flex-wrap:wrap;row-gap:2px}
+.card:has(.acts .ib + .ib) .meta{flex:1 1 calc(100% - 80px)}
+.card:has(.acts .ib + .ib) .acts{flex:1 1 100%;justify-content:flex-end;margin-bottom:-6px}
+@media (max-width:420px){.btn.icon{width:38px;height:38px}.brand{font-size:1.1rem}.top{gap:6px}}
+@media (max-width:400px){.brand span:last-child{display:none}}
 @media (max-width:520px){
+  /* phone player: buttons on top, the lesson name gets its own full-width row */
+  #s-player .top{flex-wrap:wrap;row-gap:6px}
+  #s-player .top .btn:first-child{margin-inline-end:auto}
+  #s-player .ptitle{order:9;flex:1 1 100%}
   .card{padding:12px 14px;gap:12px}
   .card .ic{width:44px;height:48px}
-  .card:has(.acts .ib + .ib){flex-wrap:wrap;row-gap:2px}
-  .card:has(.acts .ib + .ib) .meta{flex:1 1 calc(100% - 56px)}
-  .card:has(.acts .ib + .ib) .acts{flex:1 1 100%;justify-content:flex-end;margin-bottom:-6px}
 }
 </style>
 </head>
@@ -178,10 +222,18 @@ dialog .btn.wide{justify-content:flex-start}
     <div class="sp"></div>
     <button class="btn icon" id="install" data-ti="install" data-i="phone" hidden></button>
     <button class="btn icon" id="to-saved" data-ti="saved" data-i="bookmark"></button>
+    <button class="btn icon" id="theme" data-ti="theme"></button>
     <button class="btn icon" id="tog-lang"></button>
     <button class="btn icon" id="exit" data-ti="exit"><span data-i="exit" class="flip"></span></button>
   </header>
   <main id="view"></main>
+  <div id="mini" hidden>
+    <button class="ib" id="m-pp" aria-label="Play / pause"></button>
+    <button class="mini-t" id="m-open"><small id="m-sub"></small><b id="m-name" dir="auto"></b></button>
+    <small id="m-time"></small>
+    <button class="ib" id="m-x" data-i="x" aria-label="Stop"></button>
+    <i id="m-bar"></i>
+  </div>
 </section>
 
 <section id="s-player" class="screen" hidden>
@@ -191,6 +243,7 @@ dialog .btn.wide{justify-content:flex-start}
     <button class="btn icon" id="p-imp" data-ti="importT" data-i="text"></button>
     <input type="file" id="imp-file" accept=".srt,.vtt,.txt,text/plain" hidden>
     <button class="btn icon" id="p-edit" data-ti="editT" data-i="pen"></button>
+    <button class="btn icon" id="p-mark" data-ti="marker" data-i="marker"></button>
     <button class="btn icon" id="p-dl" data-ti="download" data-i="down"></button>
     <button class="btn icon fav" id="p-fav" data-ti="favs" data-i="star"></button>
   </header>
@@ -203,6 +256,7 @@ dialog .btn.wide{justify-content:flex-start}
       <button class="btn icon" id="ff" data-i="ff" aria-label="+10s"></button>
     </div>
   </div>
+  <div class="pill" id="pick" data-t="pickHint" hidden></div>
   <div class="sheet" id="sheet" hidden>
     <div class="row between"><b class="serif" id="sh-word"></b><button class="ib" id="sh-x" data-i="x"></button></div>
     <textarea id="sh-note" rows="2" data-ph="notePh" dir="auto"></textarea>
@@ -213,6 +267,8 @@ dialog .btn.wide{justify-content:flex-start}
     </div>
   </div>
 </section>
+
+<div id="jobs" aria-live="polite"></div>
 
 <dialog id="dlg"><form method="dialog">
   <h3 id="dlg-t"></h3>
@@ -243,7 +299,10 @@ en:{brand:'Majlis al-Ilm',entryQ:'How would you like to enter?',admin:'Are you a
   upHint:'Tip: select each audio file together with its .srt or .vtt file (same name) to add the transcript in one go.',
   download:'Download / offline',dlAudio:'Download audio',dlText:'Download transcript',saveOff:'Save for offline listening',removeOff:'Remove offline copy',
   offOn:'Saved on this device — plays without internet.',saving:'Saving…',close:'Close',install:'Install app',
-  lessonN:'Lesson %',reorder:'Reorder',done:'Done',up:'Move up',down:'Move down',selHint:'Tip: tap a word to jump there · select several words to highlight them',
+  lessonN:'Lesson %',reorder:'Reorder',done:'Done',up:'Move up',down:'Move down',selHint:'Tip: tap a word to jump there · to highlight, tap the highlighter button, then the first and last word (or select words with the mouse)',
+  theme:'Light / dark mode',marker:'Highlighter',pickHint:'Tap the first word, then the last',dlStarted:'Download started — you can close this pop-up.',
+  select:'Select',selAll:'Select all',nSel:'% selected',dlSel:'Download',offSel:'Save offline',rmSel:'Remove offline',
+  dlJob:'Downloading %',offJob:'Saving offline: %',failed:'Failed',
   downloaded:'Saved for offline',noDownloads:'Nothing saved yet — open a lesson and tap the download button.',
   items:'% items',lesson:'Lesson',noFavs:'No favourites yet — tap the star on any class.',noHl:'Tap any word in a lesson transcript to highlight it or add a note.'},
 ar:{brand:'مجلس العلم',entryQ:'كيف تريد الدخول؟',admin:'هل أنت مشرف؟',cont:'متابعة',pass:'كلمة المرور',enter:'دخول',wrong:'كلمة المرور غير صحيحة',back:'رجوع',
@@ -256,7 +315,10 @@ ar:{brand:'مجلس العلم',entryQ:'كيف تريد الدخول؟',admin:'�
   upHint:'نصيحة: اختر كل ملف صوتي مع ملف ‎.srt‎ أو ‎.vtt‎ الخاص به (بنفس الاسم) لإضافة النص مباشرة.',
   download:'تنزيل / بدون إنترنت',dlAudio:'تنزيل الصوت',dlText:'تنزيل النص',saveOff:'حفظ للاستماع بدون إنترنت',removeOff:'حذف النسخة المحفوظة',
   offOn:'محفوظ على هذا الجهاز — يعمل بدون إنترنت.',saving:'جارٍ الحفظ…',close:'إغلاق',install:'تثبيت التطبيق',
-  lessonN:'الدرس %',reorder:'ترتيب',done:'تم',up:'تحريك لأعلى',down:'تحريك لأسفل',selHint:'نصيحة: اضغط على كلمة للانتقال إليها · حدّد عدة كلمات لتظليلها',
+  lessonN:'الدرس %',reorder:'ترتيب',done:'تم',up:'تحريك لأعلى',down:'تحريك لأسفل',selHint:'نصيحة: اضغط على كلمة للانتقال إليها · للتظليل اضغط زر أداة التظليل ثم الكلمة الأولى والأخيرة (أو حدّد الكلمات بالفأرة)',
+  theme:'الوضع الفاتح / الداكن',marker:'أداة التظليل',pickHint:'اضغط على الكلمة الأولى ثم الأخيرة',dlStarted:'بدأ التنزيل — يمكنك إغلاق هذه النافذة.',
+  select:'تحديد',selAll:'تحديد الكل',nSel:'% محدد',dlSel:'تنزيل',offSel:'حفظ بدون إنترنت',rmSel:'حذف من الجهاز',
+  dlJob:'تنزيل %',offJob:'حفظ بدون إنترنت: %',failed:'فشل',
   downloaded:'محفوظ بدون إنترنت',noDownloads:'لا يوجد شيء محفوظ بعد — افتح درساً واضغط زر التنزيل.',
   items:'% عناصر',lesson:'درس',noFavs:'لا توجد مفضلة بعد — اضغط على النجمة في أي درس.',noHl:'اضغط على أي كلمة في نص الدرس لتظليلها أو إضافة ملاحظة.'}};
 
@@ -283,7 +345,11 @@ const I={
  chevUp:S('<path d="M6 15l6-6 6 6"/>'),
  chevDown:S('<path d="M6 9l6 6 6-6"/>'),
  sort:S('<path d="M8 20V4M4 8l4-4 4 4M16 4v16M12 16l4 4 4-4"/>'),
- phone:S('<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M12 8v6M9.5 11.5 12 14l2.5-2.5"/>')};
+ phone:S('<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M12 8v6M9.5 11.5 12 14l2.5-2.5"/>'),
+ sun:S('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
+ moon:S('<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>'),
+ marker:S('<path d="M9 11l-5 5v4h4l5-5"/><path d="M9 11l6-7 5 5-7 6z"/><path d="M14 21h6"/>'),
+ check:S('<path d="M5 12.5l4.5 4.5L19 7"/>')};
 
 const $=s=>document.querySelector(s), au=$('#au'), seek=$('#seek');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
@@ -292,6 +358,7 @@ const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{retur
 const store=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
 // favourites & highlights stay per device (no user accounts yet)
 let lang=load('lang',null), admin=false, favs=load('favs',[]), marks=load('marks',{});
+let picking=false, pickA=null, userScroll=0;
 let cur='root', mode='folder', lesson=null, lines=[], active=-1, sel=null, cache=[];
 // highlights: marks[lessonId] = [{a:[line,word], b:[line,word], text, note}]; older single-word format is converted
 for(const [id,m] of Object.entries(marks))if(!Array.isArray(m))marks[id]=Object.entries(m).map(([k,x])=>{const p=k.split('-').map(Number);return{a:p,b:p,text:x.word,note:x.note}});
@@ -309,11 +376,42 @@ const CHUNK=4e6; // same as CHUNK in api/_lib.js
 const setTranscript=async(it,text)=>Object.assign(it,await api('items','PATCH',{id:it.id,transcript:fromSubs(text)}));
 
 /* ---------- downloads & offline copies ---------- */
+// Progress toast (0-100%) for every transfer; stays visible while you browse.
+function job(label){
+  const el=document.createElement('div');el.className='job';
+  el.innerHTML='<div class="row between"><span dir="auto"></span><b>0%</b></div><i><s></s></i>';
+  el.querySelector('span').textContent=label;$('#jobs').append(el);
+  const set=p=>{p=Math.max(0,Math.min(100,Math.floor(p)));el.querySelector('b').textContent=loc(p)+'%';el.querySelector('s').style.width=p+'%'};
+  return{set,end(err){if(err){el.classList.add('err');el.querySelector('b').textContent=t('failed');el.title=err.message}else set(100);setTimeout(()=>el.remove(),err?8000:2000)}};
+}
+// Runs fn(job) with a toast; errors are shown on the toast instead of an alert.
+const track=async(label,fn)=>{const j=job(label);try{const r=await fn(j);j.end();return r}catch(e){j.end(e);e.shown=true;throw e}};
 // Whole file, fetched piece by piece with the same Range requests the player makes (served from the offline copy if saved).
-async function fetchAudio(it){
-  const parts=[];
-  for(let s=0;s<it.size;){const b=await (await fetch(`/api/audio?id=${it.id}`,{headers:{range:`bytes=${s}-`}})).blob();if(!b.size)break;parts.push(b);s+=b.size}
+// onp(bytesSoFar) is called as data streams in.
+async function fetchAudio(it,onp=()=>{}){
+  const parts=[];let got=0;
+  while(got<it.size){
+    const r=await fetch(`/api/audio?id=${it.id}`,{headers:{range:`bytes=${got}-`}});
+    if(!r.ok)throw new Error('Download failed ('+r.status+')');
+    const rd=r.body.getReader(),start=got;
+    for(let x;!(x=await rd.read()).done;){parts.push(x.value);got+=x.value.length;onp(got)}
+    if(got===start)break;
+  }
   return new Blob(parts,{type:it.mime});
+}
+// POST with upload progress (fetch can't report it)
+const send=(url,body,onp)=>new Promise((ok,fail)=>{
+  const x=new XMLHttpRequest();x.open('POST',url);x.setRequestHeader('content-type','application/octet-stream');
+  x.upload.onprogress=e=>onp(e.loaded);
+  x.onload=()=>{if(x.status<300)return ok();let m;try{m=JSON.parse(x.responseText).error}catch{}fail(new Error(m||'Upload failed ('+x.status+')'))};
+  x.onerror=()=>fail(new Error('Network error'));x.send(body);
+});
+const audioName=it=>{const sub=(it.mime||'audio/ogg').split('/')[1];return fileName(it,EXT[sub]||sub)};
+const downloadAudio=it=>track(t('dlJob').replace('%',it.name),async j=>saveFile(await fetchAudio(it,b=>j.set(b/it.size*100)),audioName(it)));
+async function saveOffline(it,onp){
+  navigator.storage?.persist?.(); // ask the browser not to evict offline lessons
+  const blob=await fetchAudio(it,onp);
+  await (await offCache()).put(offKey(it.id),new Response(blob,{headers:{'content-type':it.mime||'audio/ogg'}}));
 }
 const EXT={mpeg:'mp3',mp4:'m4a','x-m4a':'m4a','x-wav':'wav'};
 const fileName=(it,ext)=>it.name.replace(/[\\/:*?"<>|]/g,'_')+'.'+ext;
@@ -323,7 +421,16 @@ const offKey=id=>'/offline/'+id, offCache=()=>caches.open('offline');
 const isOffline=async id=>'caches' in window&&!!(await (await offCache()).match(offKey(id)));
 const offlineIds=async()=>'caches' in window?(await (await offCache()).keys()).map(r=>r.url.split('/').pop()):[];
 
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!==id)}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!==id);updMini()}
+// mini player at the bottom of the library while a lesson is loaded
+function updMini(){
+  const on=!!lesson&&!!au.getAttribute('src')&&$('#s-player').hidden;$('#mini').hidden=!on;if(!on)return;
+  $('#m-name').textContent=lesson.name;$('#m-sub').textContent=lessonLabel(lesson);
+  $('#m-pp').innerHTML=au.paused?I.play:I.pause;$('#m-time').textContent=fmt(au.currentTime);
+  $('#m-bar').style.width=(au.currentTime/au.duration*100||0)+'%';
+}
+function stopAudio(){au.pause();au.removeAttribute('src');au.load();lesson=null;updMini()}
+['play','pause','timeupdate'].forEach(ev=>au.addEventListener(ev,updMini));
 function applyLang(){
   document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';
   document.querySelectorAll('[data-t]').forEach(e=>e.textContent=t(e.dataset.t));
@@ -357,10 +464,16 @@ $('#login').onsubmit=async e=>{
   if(admin){sessionStorage.setItem('in','1');$('#pw').value='';openApp()}
   else{$('#pw-err').hidden=false;const f=$('#login');f.classList.remove('shake');void f.offsetWidth;f.classList.add('shake')}
 };
-$('#exit').onclick=()=>{api('login','DELETE').catch(()=>{});sessionStorage.clear();admin=false;show('s-entry')};
+$('#exit').onclick=()=>{stopAudio();api('login','DELETE').catch(()=>{});sessionStorage.clear();admin=false;show('s-entry')};
 $('#tog-lang').onclick=()=>{lang=lang==='ar'?'en':'ar';store('lang',lang);applyLang();render()};
 $('#home').onclick=()=>{cur='root';mode='folder';render()};
 $('#to-saved').onclick=()=>{mode='saved';render()};
+let theme=load('theme','dark');
+function applyTheme(){
+  document.documentElement.dataset.theme=theme;$('#theme').innerHTML=I[theme==='light'?'moon':'sun'];
+  $('meta[name=theme-color]').content=theme==='light'?'#e8e7e4':'#1c1d1f';
+}
+$('#theme').onclick=()=>{theme=theme==='light'?'dark':'light';store('theme',theme);applyTheme()};
 function openApp(){$('#badge').hidden=!admin;cur='root';mode='folder';reorder=false;show('s-app');render()}
 const render=()=>(mode==='saved'?renderSaved():renderFolder(cur)).catch(e=>$('#view').innerHTML=`<div class="empty">${I.arch}<p>${esc(e.message)}</p></div>`);
 
@@ -368,20 +481,21 @@ const render=()=>(mode==='saved'?renderSaved():renderFolder(cur)).catch(e=>$('#v
 // Order within a folder = pos (admin-set); lessons are numbered by that order.
 const order=x=>Number(x.pos??x.created);
 const siblings=it=>cache.filter(c=>c.parent===it.parent&&c.type===it.type).sort((a,b)=>order(a)-order(b));
-const lessonNo=it=>siblings(it).indexOf(it)+1;
+const lessonNo=it=>siblings(it).findIndex(x=>x.id===it.id)+1;
 const loc=n=>n.toLocaleString(lang==='ar'?'ar-EG':'en');
 const lessonLabel=it=>t('lessonN').replace('%',loc(lessonNo(it)));
-let reorder=false;
+let reorder=false, selecting=false, selIn=null;
+const chosen=new Set();
 async function move(id,dir){
   const it=get(id),sib=siblings(it),o=sib[sib.indexOf(it)+dir];if(!o)return;
   const a=order(it),b=order(o);
   await Promise.all([api('items','PATCH',{id:it.id,pos:b}),api('items','PATCH',{id:o.id,pos:a===b?b-dir:a})]);
   render();
 }
-const card=(i,n)=>`<div class="card ${i.type}" data-open="${i.id}" tabindex="0">
+const card=(i,n)=>`<div class="card ${i.type}${chosen.has(i.id)?' chosen':''}" data-open="${i.id}" tabindex="0">
   <div class="ic">${i.type==='folder'?I.arch:`<b class="no">${loc(lessonNo(i))}</b>`}</div>
   <div class="meta"><b dir="auto">${esc(i.name)}</b><small>${i.type==='folder'?t('items').replace('%',n):lessonLabel(i)+(i.dur?' · '+fmt(i.dur):'')}</small></div>
-  <div class="acts">${reorder?`<button class="ib" data-mv="-1" data-id="${i.id}" title="${t('up')}">${I.chevUp}</button><button class="ib" data-mv="1" data-id="${i.id}" title="${t('down')}">${I.chevDown}</button>`
+  <div class="acts">${selecting?(i.type==='lesson'?`<span class="chk">${I.check}</span>`:''):reorder?`<button class="ib" data-mv="-1" data-id="${i.id}" title="${t('up')}">${I.chevUp}</button><button class="ib" data-mv="1" data-id="${i.id}" title="${t('down')}">${I.chevDown}</button>`
   :`<button class="ib fav${favs.includes(i.id)?' on':''}" data-fav="${i.id}" title="${t('favs')}">${I.star}</button>
   ${admin?`<button class="ib" data-ren="${i.id}" title="${t('rename')}">${I.pen}</button><button class="ib" data-del="${i.id}" title="${t('del')}">${I.trash}</button>`:''}`}</div></div>`;
 
@@ -391,11 +505,48 @@ async function renderFolder(id){
   const path=[];for(let p=id;p!=='root';p=byId[p].parent)path.unshift(byId[p]);
   const count=f=>items.filter(c=>c.parent===f.id).length;
   const kids=items.filter(i=>i.parent===id).sort((a,b)=>a.type.localeCompare(b.type)||order(a)-order(b));
+  if(selIn!==id){selecting=false;chosen.clear();selIn=id}
+  const hasLessons=kids.some(i=>i.type==='lesson');
   $('#view').innerHTML=`<nav class="crumbs"><button data-go="root">${t('classes')}</button>${path.map(p=>`<span>/</span><button data-go="${p.id}">${esc(p.name)}</button>`).join('')}</nav>
   <div class="head"><h1>${esc(id==='root'?t('classes'):byId[id].name)}</h1>
-  ${admin?`<div class="row">${kids.length>1?`<button class="btn${reorder?' gold':''}" id="ro">${I.sort}${t(reorder?'done':'reorder')}</button>`:''}<button class="btn" id="mk">${I.plus}${t('newFolder')}</button><label class="btn gold">${I.up}<span id="up-t">${t('upload')}</span><input type="file" id="file" accept="audio/*,.ogg,.oga,.opus,.m4a,.mp3,.srt,.vtt,.txt" multiple hidden></label></div>`:''}</div>
+  <div class="row">${hasLessons?`<button class="btn${selecting?' gold':''}" id="sel">${I.check}${t(selecting?'done':'select')}</button>`:''}
+  ${admin?`${kids.length>1?`<button class="btn${reorder?' gold':''}" id="ro">${I.sort}${t(reorder?'done':'reorder')}</button>`:''}<button class="btn" id="mk">${I.plus}${t('newFolder')}</button><label class="btn gold">${I.up}<span id="up-t">${t('upload')}</span><input type="file" id="file" accept="audio/*,.ogg,.oga,.opus,.m4a,.mp3,.srt,.vtt,.txt" multiple hidden></label>`:''}</div></div>
   ${admin?`<p class="mute hint">${t('upHint')}</p>`:''}
-  ${kids.length?`<div class="grid">${kids.map(i=>card(i,count(i))).join('')}</div>`:`<div class="empty">${I.arch}<p>${t('empty')}</p>${admin?`<small>${t('emptyAdmin')}</small>`:''}</div>`}`;
+  ${kids.length?`<div class="grid">${kids.map(i=>card(i,count(i))).join('')}</div>`:`<div class="empty">${I.arch}<p>${t('empty')}</p>${admin?`<small>${t('emptyAdmin')}</small>`:''}</div>`}
+  ${selecting?`<div id="bulk"><b id="nsel"></b><div class="sp"></div><button class="btn" data-b="all">${t('selAll')}</button>
+    <button class="btn gold" data-b="zip">${I.down}${t('dlSel')}</button>
+    ${'caches' in window?`<button class="btn" data-b="off">${I.phone}${t('offSel')}</button><button class="btn" data-b="rm">${I.trash}${t('rmSel')}</button>`:''}</div>`:''}`;
+  if(selecting)updBulk();
+}
+function updBulk(){
+  $('#nsel').textContent=t('nSel').replace('%',loc(chosen.size));
+  document.querySelectorAll('#bulk [data-b]:not([data-b=all])').forEach(b=>b.disabled=!chosen.size);
+}
+// Bulk actions on the chosen lessons of the open folder; one progress toast for the whole batch.
+async function bulk(a){
+  const ls=cache.filter(i=>i.parent===cur&&i.type==='lesson').sort((x,y)=>order(x)-order(y));
+  if(a==='all'){
+    const every=ls.every(i=>chosen.has(i.id));ls.forEach(i=>every?chosen.delete(i.id):chosen.add(i.id));
+    document.querySelectorAll('.card.lesson').forEach(c=>c.classList.toggle('chosen',chosen.has(c.dataset.open)));
+    return updBulk();
+  }
+  const pick=ls.filter(i=>chosen.has(i.id)),total=pick.reduce((s,i)=>s+i.size,0)||1,name=cur==='root'?t('classes'):get(cur).name;
+  selecting=false;chosen.clear();render();
+  let done=0;
+  const each=async(j,fn)=>{for(const it of pick){await fn(it,b=>j.set((done+b)/total*100));done+=it.size}};
+  if(a==='zip'&&pick.length===1)return downloadAudio(pick[0]);
+  // ponytail: the ZIP is built in memory; fine for lecture audio, a streaming writer if folders reach GBs
+  if(a==='zip')return track(t('dlJob').replace('%',name),async j=>{
+    const files=[];
+    await each(j,async(it,onp)=>{
+      const no=String(lessonNo(it)).padStart(2,'0')+' - ';
+      files.push({name:no+audioName(it),data:new Uint8Array(await (await fetchAudio(it,onp)).arrayBuffer())});
+      if(it.transcript)files.push({name:no+fileName(it,'txt'),data:new TextEncoder().encode('\ufeff'+it.transcript)});
+    });
+    saveFile(zip(files),name.replace(/[\\/:*?"<>|]/g,'_')+'.zip');
+  });
+  if(a==='off')return track(t('offJob').replace('%',name),j=>each(j,async(it,onp)=>{if(!await isOffline(it.id))await saveOffline(it,onp)}));
+  if(a==='rm'){const c=await offCache();await Promise.all(pick.map(it=>c.delete(offKey(it.id))))}
 }
 
 async function renderSaved(){
@@ -416,18 +567,21 @@ async function renderSaved(){
 }
 
 $('#view').onclick=async e=>{
-  const b=e.target.closest('[data-go],[data-fav],[data-ren],[data-del],[data-mv],[data-open],#mk,#ro');if(!b)return;
+  const b=e.target.closest('[data-go],[data-fav],[data-ren],[data-del],[data-mv],[data-open],[data-b],#mk,#ro,#sel');if(!b)return;
   const d=b.dataset;
   try{
     if(d.go){cur=d.go;mode='folder';render()}
-    else if(b.id==='ro'){reorder=!reorder;render()}
+    else if(b.id==='ro'){reorder=!reorder;selecting=false;chosen.clear();render()}
+    else if(b.id==='sel'){selecting=!selecting;reorder=false;chosen.clear();render()}
+    else if(d.b){await bulk(d.b)}
+    else if(selecting&&d.open&&get(d.open)?.type==='lesson'){chosen.has(d.open)?chosen.delete(d.open):chosen.add(d.open);b.classList.toggle('chosen');updBulk()}
     else if(d.mv){await move(d.id,+d.mv)}
     else if(d.fav){toggleFav(d.fav);b.classList.toggle('on')}
     else if(d.ren){const it=get(d.ren),v=await ask(t('rename'),'text',it.name);if(v){await api('items','PATCH',{id:it.id,name:v});render()}}
     else if(d.del){const it=get(d.del);if(await ask(t('delQ').replace('%',it.name),'confirm')){await api('items','DELETE',{id:it.id});render()}}
     else if(b.id==='mk'){const v=await ask(t('newFolder'));if(v){await api('items','POST',{type:'folder',name:v,parent:cur});render()}}
     else if(d.open){const it=get(d.open);if(it.type==='folder'){cur=it.id;mode='folder';render()}else openLesson(it)}
-  }catch(err){alert(err.message)}
+  }catch(err){if(!err.shown)alert(err.message)}
 };
 $('#view').onkeydown=e=>{if(e.key==='Enter'&&e.target.dataset.open)e.target.click()};
 $('#view').onchange=async e=>{
@@ -435,21 +589,18 @@ $('#view').onchange=async e=>{
   // audio + matching .srt/.vtt/.txt (same file name) can be picked together
   const picked=[...e.target.files],isSub=f=>/\.(srt|vtt|txt)$/i.test(f.name),base=f=>f.name.replace(/\.[^.]+$/,'');
   const files=picked.filter(f=>!isSub(f)),subs=Object.fromEntries(picked.filter(isSub).map(f=>[base(f),f]));
-  try{
-    for(const [n,f] of files.entries()){
-      const prog=p=>$('#up-t').textContent=t('uploading').replace('%',`${n+1}/${files.length} · ${Math.round(p)}%`);
-      const row=await api('items','POST',{type:'lesson',name:base(f),parent:cur,mime:f.type,size:f.size});
+  const folder=cur,jobs=files.map(f=>job(t('uploading').replace('%',base(f))));
+  for(const [n,f] of files.entries()){
+    try{
+      const row=await api('items','POST',{type:'lesson',name:base(f),parent:folder,mime:f.type,size:f.size});
       try{
-        for(let i=0;i*CHUNK<f.size;i++){
-          prog(i*CHUNK/f.size*100);
-          const r=await fetch(`/api/audio?id=${row.id}&n=${i}`,{method:'POST',headers:{'content-type':'application/octet-stream'},body:f.slice(i*CHUNK,(i+1)*CHUNK)});
-          if(!r.ok)throw new Error((await r.json().catch(()=>({}))).error||'Upload failed ('+r.status+')');
-        }
+        for(let i=0;i*CHUNK<f.size;i++)await send(`/api/audio?id=${row.id}&n=${i}`,f.slice(i*CHUNK,(i+1)*CHUNK),b=>jobs[n].set((i*CHUNK+b)/f.size*100));
       }catch(err){await api('items','DELETE',{id:row.id}).catch(()=>{});throw err}
       if(subs[base(f)])await setTranscript(row,await subs[base(f)].text());
-    }
-  }catch(err){alert(err.message)}
-  render();
+      jobs[n].end();
+    }catch(err){jobs[n].end(err)}
+    if(mode==='folder'&&cur===folder&&$('#s-player').hidden)render();
+  }
 };
 
 /* ---------- player ---------- */
@@ -462,11 +613,12 @@ function parse(text,dur){
   return ls;
 }
 async function openLesson(it){
-  lesson=it;sheetClose();
+  lesson=it;sheetClose();setPicking(false);
   $('#p-name').textContent=it.name;
   const f=get(it.parent);$('#p-folder').textContent=(f?f.name:t('classes'))+' · '+lessonLabel(it);
   $('#p-edit').hidden=$('#p-imp').hidden=!admin;$('#p-fav').classList.toggle('on',favs.includes(it.id));
-  au.src='/api/audio?id='+encodeURIComponent(it.id);
+  const src='/api/audio?id='+encodeURIComponent(it.id);
+  if(au.getAttribute('src')!==src)au.src=src; // same lesson from the mini player: keep playing where it is
   show('s-player');renderLyrics();
 }
 const P=(li,wi)=>li*1e4+wi; // word position, comparable across lines
@@ -495,7 +647,7 @@ function sync(){
   let i=-1;lines.forEach((l,j)=>{if(l.t<=au.currentTime)i=j});
   if(i===active)return;active=i;
   document.querySelectorAll('.ln').forEach((p,j)=>{p.classList.toggle('on',j===i);p.classList.toggle('past',j<i)});
-  if(i>=0&&$('#sheet').hidden)$('.ln.on').scrollIntoView({block:'center',behavior:'smooth'});
+  if(i>=0&&$('#sheet').hidden&&!picking&&Date.now()-userScroll>4000)$('.ln.on').scrollIntoView({block:'center',behavior:'smooth'});
 }
 au.ontimeupdate=sync;
 au.onloadedmetadata=()=>{
@@ -504,11 +656,19 @@ au.onloadedmetadata=()=>{
   renderLyrics();
 };
 au.onplay=au.onpause=()=>$('#pp').innerHTML=au.paused?I.play:I.pause;
-$('#pp').onclick=()=>au.paused?au.play():au.pause();
+$('#pp').onclick=$('#m-pp').onclick=()=>au.paused?au.play():au.pause();
+$('#m-open').onclick=()=>openLesson(get(lesson.id)||lesson);
+$('#m-x').onclick=stopAudio;
+// lock screen / notification controls
+if('mediaSession' in navigator){
+  au.addEventListener('play',()=>navigator.mediaSession.metadata=new MediaMetadata({title:lesson.name,artist:t('brand'),artwork:[{src:'/icon-512.png',sizes:'512x512',type:'image/png'}]}));
+  navigator.mediaSession.setActionHandler('seekbackward',()=>$('#rw').click());
+  navigator.mediaSession.setActionHandler('seekforward',()=>$('#ff').click());
+}
 $('#rw').onclick=()=>au.currentTime=Math.max(0,au.currentTime-10);
 $('#ff').onclick=()=>au.currentTime+=10;
 seek.oninput=()=>au.currentTime=seek.value;
-$('#p-back').onclick=()=>{au.pause();sheetClose();show('s-app');render()};
+$('#p-back').onclick=()=>{sheetClose();setPicking(false);show('s-app');render()};
 $('#p-fav').onclick=()=>{toggleFav(lesson.id);$('#p-fav').classList.toggle('on')};
 $('#p-edit').onclick=async()=>{
   const v=await ask(t('editT'),'area',lesson.transcript);
@@ -527,19 +687,16 @@ async function dlState(){
   $('#dl-x').disabled=!lesson.transcript;$('#dl-o').hidden=!('caches' in window);
 }
 $('#p-dl').onclick=()=>{$('#dl-t').textContent=lesson.name;dlState();$('#dl').showModal()};
-const busy=async(b,fn)=>{b.disabled=true;try{await fn()}catch(e){alert(e.message)}b.disabled=false;dlState()};
-$('#dl-a').onclick=e=>busy(e.currentTarget,async()=>{
-  $('#dl-s').textContent=t('saving');const it=lesson,sub=(it.mime||'audio/ogg').split('/')[1];
-  saveFile(await fetchAudio(it),fileName(it,EXT[sub]||sub));
-});
-$('#dl-x').onclick=()=>saveFile(new Blob(['﻿'+lesson.transcript],{type:'text/plain;charset=utf-8'}),fileName(lesson,'txt'));
-$('#dl-o').onclick=e=>busy(e.currentTarget,async()=>{
-  const it=lesson,c=await offCache();
-  if(await c.match(offKey(it.id)))return void await c.delete(offKey(it.id));
-  $('#dl-s').textContent=t('saving');
-  navigator.storage?.persist?.(); // ask the browser not to evict offline lessons
-  await c.put(offKey(it.id),new Response(await fetchAudio(it),{headers:{'content-type':it.mime||'audio/ogg'}}));
-});
+const busy=async(b,fn)=>{b.disabled=true;try{await fn()}catch(e){if(!e.shown)alert(e.message)}b.disabled=false};
+const started=()=>$('#dl-s').textContent=t('dlStarted');
+$('#dl-a').onclick=e=>{started();busy(e.currentTarget,()=>downloadAudio(lesson))};
+const txtBlob=it=>new Blob(['﻿'+it.transcript],{type:'text/plain;charset=utf-8'});
+$('#dl-x').onclick=()=>saveFile(txtBlob(lesson),fileName(lesson,'txt'));
+$('#dl-o').onclick=e=>{const it=lesson;busy(e.currentTarget,async()=>{
+  if(await isOffline(it.id))return void await (await offCache()).delete(offKey(it.id));
+  started();
+  await track(t('offJob').replace('%',it.name),j=>saveOffline(it,b=>j.set(b/it.size*100)));
+}).then(()=>$('#dl').open&&lesson===it&&dlState())};
 
 document.addEventListener('keydown',e=>{
   if($('#s-player').hidden||/INPUT|TEXTAREA/.test(e.target.tagName)||$('#dlg').open||$('#dl').open)return;
@@ -550,24 +707,39 @@ document.addEventListener('keydown',e=>{
 
 /* ---------- highlights & notes ---------- */
 const key=w=>w.dataset.k.split('-').map(Number);
+['touchstart','wheel','pointerdown'].forEach(ev=>$('#lyrics').addEventListener(ev,()=>userScroll=Date.now(),{passive:true}));
+function setPicking(on){
+  picking=on;pickA=null;document.querySelector('.w.pick')?.classList.remove('pick');
+  $('#p-mark').classList.toggle('on',on);$('#pick').hidden=!on;if(on)sheetClose();
+}
+$('#p-mark').onclick=()=>setPicking(!picking);
 // tap a word → audio jumps there (tapping a highlight also shows its note)
 $('#lyrics').onclick=e=>{
   if(!getSelection().isCollapsed)return; // end of a drag-select, not a tap
   const w=e.target.closest('.w'),p=e.target.closest('.ln');
-  if(w){seekTo(...key(w));const m=markAt(...key(w));m?openSheet(m):sheetClose()}
+  if(picking){
+    if(!w)return;
+    if(!pickA){pickA=key(w);w.classList.add('pick');return}
+    let a=pickA,b=key(w);if(P(...b)<P(...a))[a,b]=[b,a];
+    setPicking(false);return openSheet({a,b},true);
+  }
+  if(w){seekTo(...key(w));const m=markAt(...key(w));m?openSheet(m,true):sheetClose()}
   else if(p)seekTo(+p.dataset.li,0);
 };
 // select several words (drag, or long-press + drag on phones) → highlight / note sheet for that range
 document.addEventListener('selectionchange',()=>{
   const s=getSelection();if(s.isCollapsed||$('#s-player').hidden)return;
   const ws=[...document.querySelectorAll('#lyrics .w')].filter(w=>s.containsNode(w,true)); // ponytail: scans every word; fine for lecture-length text
-  if(ws.length)openSheet({a:key(ws[0]),b:key(ws.at(-1))});
+  if(ws.length&&!picking)openSheet({a:key(ws[0]),b:key(ws.at(-1))});
 });
-function openSheet(r){
+function openSheet(r,reveal){
   sel={a:r.a,b:r.b};const over=overlaps(sel);
   $('#sh-word').textContent=rangeText(sel.a,sel.b);
   $('#sh-note').value=over.map(m=>m.note).filter(Boolean).join(' / ');
   $('#sh-hl').textContent=t(over.length?'unhl':'hl');$('#sheet').hidden=false;
+  // keep the chosen words visible above the sheet
+  const w=document.querySelector(`.w[data-k="${sel.b.join('-')}"]`),top=$('#sheet').getBoundingClientRect().top;
+  if(reveal&&w&&w.getBoundingClientRect().bottom>top-12)$('#lyrics').scrollBy({top:w.getBoundingClientRect().bottom-top+60,behavior:'smooth'});
 }
 function sheetClose(){$('#sheet').hidden=true;sel=null}
 // add merges with any highlight it touches; remove deletes every highlight inside the selection
@@ -595,6 +767,7 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch
 
 /* ---------- boot ---------- */
 document.querySelectorAll('[data-i]').forEach(e=>e.innerHTML=I[e.dataset.i]);
+applyTheme();
 (async()=>{
   admin=await api('login').then(d=>d.admin,()=>false);
   if(!lang)show('s-lang');else{applyLang();admin||sessionStorage.getItem('in')?openApp():show('s-entry')}
