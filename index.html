@@ -168,6 +168,7 @@ dialog form{display:grid;gap:12px}
   <header class="top">
     <button class="btn icon" id="p-back" data-ti="back"><span data-i="back" class="flip"></span></button>
     <div class="ptitle"><small id="p-folder"></small><b id="p-name"></b></div>
+    <button class="btn icon" id="p-tr" data-ti="transcribe" data-i="text"></button>
     <button class="btn icon" id="p-edit" data-ti="editT" data-i="pen"></button>
     <button class="btn icon fav" id="p-fav" data-ti="favs" data-i="star"></button>
   </header>
@@ -207,6 +208,7 @@ en:{brand:'Majlis al-Ilm',entryQ:'How would you like to enter?',admin:'Are you a
   tHelp:'One line per sentence. Optional timing per line: [01:23] text — without timings, lines are spread across the audio.',
   rename:'Rename',delQ:'Delete “%”? This also removes everything inside it.',ok:'Save',del:'Delete',cancel:'Cancel',
   playHere:'Play from here',hl:'Highlight',unhl:'Remove highlight',notePh:'Add a note…',saveNote:'Save note',exit:'Exit',adminBadge:'Admin',
+  uploading:'Uploading %',transcribe:'Transcribe audio',transcribing:'Transcribing… this can take a minute.',
   items:'% items',lesson:'Lesson',noFavs:'No favourites yet — tap the star on any class.',noHl:'Tap any word in a lesson transcript to highlight it or add a note.'},
 ar:{brand:'مجلس العلم',entryQ:'كيف تريد الدخول؟',admin:'هل أنت مشرف؟',cont:'متابعة',pass:'كلمة المرور',enter:'دخول',wrong:'كلمة المرور غير صحيحة',back:'رجوع',
   classes:'الدروس',newFolder:'مجلد جديد',upload:'رفع تسجيل صوتي',saved:'المحفوظات',favs:'المفضلة',highlights:'التظليلات والملاحظات',
@@ -214,6 +216,7 @@ ar:{brand:'مجلس العلم',entryQ:'كيف تريد الدخول؟',admin:'�
   tHelp:'سطر لكل جملة. توقيت اختياري لكل سطر: [01:23] النص — بدون توقيت تُوزَّع الأسطر على مدة التسجيل.',
   rename:'إعادة تسمية',delQ:'حذف «%»؟ سيُحذف كل ما بداخله أيضاً.',ok:'حفظ',del:'حذف',cancel:'إلغاء',
   playHere:'تشغيل من هنا',hl:'تظليل',unhl:'إزالة التظليل',notePh:'أضف ملاحظة…',saveNote:'حفظ الملاحظة',exit:'خروج',adminBadge:'مشرف',
+  uploading:'جارٍ الرفع %',transcribe:'تحويل الصوت إلى نص',transcribing:'جارٍ التحويل إلى نص… قد يستغرق دقيقة.',
   items:'% عناصر',lesson:'درس',noFavs:'لا توجد مفضلة بعد — اضغط على النجمة في أي درس.',noHl:'اضغط على أي كلمة في نص الدرس لتظليلها أو إضافة ملاحظة.'}};
 
 const S=d=>`<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
@@ -233,24 +236,27 @@ const I={
  back:S('<path d="M15 5l-7 7 7 7"/>'),
  bookmark:S('<path d="M6 3h12v18l-6-4-6 4z"/>'),
  exit:S('<path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/>'),
- x:S('<path d="M6 6l12 12M18 6L6 18"/>')};
+ x:S('<path d="M6 6l12 12M18 6L6 18"/>'),
+ text:S('<path d="M4 6h16M4 11h16M4 16h9"/><path d="M17 15l1.2 2.3 2.3 1.2-2.3 1.2L17 22l-1.2-2.3-2.3-1.2 2.3-1.2z" fill="currentColor"/>')};
 
 const $=s=>document.querySelector(s), au=$('#au'), seek=$('#seek');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const fmt=s=>isFinite(s)?Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'):'0:00';
-const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
 const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}};
 const store=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
-let lang=load('lang',null), admin=sessionStorage.getItem('admin')==='1', favs=load('favs',[]), marks=load('marks',{});
-let cur='root', mode='folder', lesson=null, lines=[], active=-1, sel=null;
+// favourites & highlights stay per device (no user accounts yet)
+let lang=load('lang',null), admin=false, favs=load('favs',[]), marks=load('marks',{});
+let cur='root', mode='folder', lesson=null, lines=[], active=-1, sel=null, cache=[];
 const t=k=>T[lang||'en'][k];
 
-// ponytail: audio lives in this browser's IndexedDB only; a shared library across devices needs a server/storage bucket.
-const db=new Promise((res,rej)=>{const r=indexedDB.open('majlis',1);r.onupgradeneeded=()=>r.result.createObjectStore('items',{keyPath:'id'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
-const tx=async(m,fn)=>{const d=await db;return new Promise((res,rej)=>{const q=fn(d.transaction('items',m).objectStore('items'));q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})};
-const all=()=>tx('readonly',s=>s.getAll()), get=id=>tx('readonly',s=>s.get(id));
-const put=o=>tx('readwrite',s=>s.put(o)), del=id=>tx('readwrite',s=>s.delete(id));
-async function delTree(id){const items=await all();const go=async x=>{for(const c of items.filter(i=>i.parent===x))await go(c.id);await del(x)};await go(id)}
+async function api(path,method='GET',body){
+  const r=await fetch('/api/'+path,{method,headers:body?{'content-type':'application/json'}:{},body:body&&JSON.stringify(body)});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(d.error||'Request failed ('+r.status+')');
+  return d;
+}
+const all=async()=>cache=await api('items'), get=id=>cache.find(i=>i.id===id);
+const transcribe=id=>api('transcribe','POST',{id});
 
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!==id)}
 function applyLang(){
@@ -264,8 +270,11 @@ function ask(title,kind='text',val=''){
   const d=$('#dlg'),f=kind==='area'?$('#dlg-a'):$('#dlg-i');
   $('#dlg-t').textContent=title;$('#dlg-i').hidden=kind!=='text';$('#dlg-a').hidden=$('#dlg-h').hidden=kind!=='area';
   $('#dlg-ok').textContent=t(kind==='confirm'?'del':'ok');
-  f.value=val;d.returnValue='';d.showModal();if(kind!=='confirm')f.focus();
-  return new Promise(r=>d.onclose=()=>r(d.returnValue!=='ok'?null:kind==='confirm'?true:f.value.trim()));
+  f.value=val;d.showModal();if(kind!=='confirm')f.focus();
+  return new Promise(r=>{
+    d.firstElementChild.onsubmit=e=>r(e.submitter?.value==='cancel'?null:kind==='confirm'?true:f.value.trim());
+    d.oncancel=()=>r(null);
+  });
 }
 function toggleFav(id){favs=favs.includes(id)?favs.filter(x=>x!==id):[...favs,id];store('favs',favs)}
 
@@ -274,19 +283,21 @@ document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.datase
 $('#chg-lang').onclick=()=>show('s-lang');
 $('#go-admin').onclick=()=>{show('s-login');$('#pw-err').hidden=true;$('#pw').focus()};
 $('#login-back').onclick=()=>show('s-entry');
-$('#go-user').onclick=()=>{admin=false;sessionStorage.setItem('in','1');sessionStorage.removeItem('admin');openApp()};
-$('#login').onsubmit=e=>{
+$('#go-user').onclick=()=>{sessionStorage.setItem('in','1');openApp()};
+$('#login').onsubmit=async e=>{
   e.preventDefault();
-  // ponytail: client-side password = demo only; anyone can read it in the source. Real auth needs a backend.
-  if($('#pw').value==='123qwe'){admin=true;sessionStorage.setItem('admin','1');sessionStorage.setItem('in','1');$('#pw').value='';openApp()}
+  const btn=e.submitter;btn.disabled=true;
+  admin=await api('login','POST',{password:$('#pw').value}).then(d=>d.admin,()=>false);
+  btn.disabled=false;
+  if(admin){sessionStorage.setItem('in','1');$('#pw').value='';openApp()}
   else{$('#pw-err').hidden=false;const f=$('#login');f.classList.remove('shake');void f.offsetWidth;f.classList.add('shake')}
 };
-$('#exit').onclick=()=>{sessionStorage.clear();admin=false;show('s-entry')};
+$('#exit').onclick=()=>{api('login','DELETE').catch(()=>{});sessionStorage.clear();admin=false;show('s-entry')};
 $('#tog-lang').onclick=()=>{lang=lang==='ar'?'en':'ar';store('lang',lang);applyLang();render()};
 $('#home').onclick=()=>{cur='root';mode='folder';render()};
 $('#to-saved').onclick=()=>{mode='saved';render()};
 function openApp(){$('#badge').hidden=!admin;cur='root';mode='folder';show('s-app');render()}
-const render=()=>mode==='saved'?renderSaved():renderFolder(cur);
+const render=()=>(mode==='saved'?renderSaved():renderFolder(cur)).catch(e=>$('#view').innerHTML=`<div class="empty">${I.arch}<p>${esc(e.message)}</p></div>`);
 
 /* ---------- library ---------- */
 const card=(i,n)=>`<div class="card ${i.type}" data-open="${i.id}" tabindex="0">
@@ -303,7 +314,7 @@ async function renderFolder(id){
   const kids=items.filter(i=>i.parent===id).sort((a,b)=>a.type.localeCompare(b.type)||a.created-b.created);
   $('#view').innerHTML=`<nav class="crumbs"><button data-go="root">${t('classes')}</button>${path.map(p=>`<span>/</span><button data-go="${p.id}">${esc(p.name)}</button>`).join('')}</nav>
   <div class="head"><h1>${esc(id==='root'?t('classes'):byId[id].name)}</h1>
-  ${admin?`<div class="row"><button class="btn" id="mk">${I.plus}${t('newFolder')}</button><label class="btn gold">${I.up}${t('upload')}<input type="file" id="file" accept="audio/*,.ogg,.oga,.opus,.m4a,.mp3" multiple hidden></label></div>`:''}</div>
+  ${admin?`<div class="row"><button class="btn" id="mk">${I.plus}${t('newFolder')}</button><label class="btn gold">${I.up}<span id="up-t">${t('upload')}</span><input type="file" id="file" accept="audio/*,.ogg,.oga,.opus,.m4a,.mp3" multiple hidden></label></div>`:''}</div>
   ${kids.length?`<div class="grid">${kids.map(i=>card(i,count(i))).join('')}</div>`:`<div class="empty">${I.arch}<p>${t('empty')}</p>${admin?`<small>${t('emptyAdmin')}</small>`:''}</div>`}`;
 }
 
@@ -324,17 +335,29 @@ async function renderSaved(){
 $('#view').onclick=async e=>{
   const b=e.target.closest('[data-go],[data-fav],[data-ren],[data-del],[data-open],#mk');if(!b)return;
   const d=b.dataset;
-  if(d.go){cur=d.go;mode='folder';render()}
-  else if(d.fav){toggleFav(d.fav);b.classList.toggle('on')}
-  else if(d.ren){const it=await get(d.ren),v=await ask(t('rename'),'text',it.name);if(v){it.name=v;await put(it);render()}}
-  else if(d.del){const it=await get(d.del);if(await ask(t('delQ').replace('%',it.name),'confirm')){await delTree(it.id);render()}}
-  else if(b.id==='mk'){const v=await ask(t('newFolder'));if(v){await put({id:uid(),type:'folder',name:v,parent:cur,created:Date.now()});render()}}
-  else if(d.open){const it=await get(d.open);if(it.type==='folder'){cur=it.id;mode='folder';render()}else openLesson(it)}
+  try{
+    if(d.go){cur=d.go;mode='folder';render()}
+    else if(d.fav){toggleFav(d.fav);b.classList.toggle('on')}
+    else if(d.ren){const it=get(d.ren),v=await ask(t('rename'),'text',it.name);if(v){await api('items','PATCH',{id:it.id,name:v});render()}}
+    else if(d.del){const it=get(d.del);if(await ask(t('delQ').replace('%',it.name),'confirm')){await api('items','DELETE',{id:it.id});render()}}
+    else if(b.id==='mk'){const v=await ask(t('newFolder'));if(v){await api('items','POST',{type:'folder',name:v,parent:cur});render()}}
+    else if(d.open){const it=get(d.open);if(it.type==='folder'){cur=it.id;mode='folder';render()}else openLesson(it)}
+  }catch(err){alert(err.message)}
 };
 $('#view').onkeydown=e=>{if(e.key==='Enter'&&e.target.dataset.open)e.target.click()};
 $('#view').onchange=async e=>{
   if(e.target.id!=='file')return;
-  for(const f of e.target.files)await put({id:uid(),type:'lesson',name:f.name.replace(/\.[^.]+$/,''),parent:cur,blob:f,transcript:'',created:Date.now()});
+  const files=[...e.target.files];
+  try{
+    const {upload}=await import('https://esm.sh/@vercel/blob@2.9.0/client');
+    for(const [n,f] of files.entries()){
+      const prog=p=>$('#up-t').textContent=t('uploading').replace('%',`${n+1}/${files.length} · ${Math.round(p)}%`);prog(0);
+      const ext=(f.name.match(/\.[a-z0-9]+$/i)||['.ogg'])[0].toLowerCase();
+      const blob=await upload('audio/lesson'+ext,f,{access:'public',handleUploadUrl:'/api/upload',multipart:f.size>8e6,onUploadProgress:p=>prog(p.percentage)});
+      const row=await api('items','POST',{type:'lesson',name:f.name.replace(/\.[^.]+$/,''),parent:cur,url:blob.url});
+      transcribe(row.id).catch(()=>{}); // runs in the background; the Transcribe button in the player retries
+    }
+  }catch(err){alert(err.message)}
   render();
 };
 
@@ -350,9 +373,9 @@ function parse(text,dur){
 async function openLesson(it){
   lesson=it;sheetClose();
   $('#p-name').textContent=it.name;
-  const f=it.parent==='root'?null:await get(it.parent);$('#p-folder').textContent=f?f.name:t('classes');
-  $('#p-edit').hidden=!admin;$('#p-fav').classList.toggle('on',favs.includes(it.id));
-  URL.revokeObjectURL(au.src);au.src=URL.createObjectURL(it.blob);
+  const f=get(it.parent);$('#p-folder').textContent=f?f.name:t('classes');
+  $('#p-edit').hidden=$('#p-tr').hidden=!admin;$('#p-fav').classList.toggle('on',favs.includes(it.id));
+  au.src=it.url;
   show('s-player');renderLyrics();
 }
 function renderLyrics(){
@@ -375,7 +398,7 @@ function playLine(li){if(isFinite(lines[li]?.t)){au.currentTime=lines[li].t;au.p
 au.ontimeupdate=sync;
 au.onloadedmetadata=()=>{
   seek.max=au.duration;$('#dur').textContent=fmt(au.duration);
-  if(isFinite(au.duration)&&lesson.dur!==au.duration){lesson.dur=au.duration;put(lesson)}
+  if(admin&&isFinite(au.duration)&&Math.round(lesson.dur)!==Math.round(au.duration)){lesson.dur=au.duration;api('items','PATCH',{id:lesson.id,dur:au.duration}).catch(()=>{})}
   renderLyrics();
 };
 au.onplay=au.onpause=()=>$('#pp').innerHTML=au.paused?I.play:I.pause;
@@ -385,7 +408,16 @@ $('#ff').onclick=()=>au.currentTime+=10;
 seek.oninput=()=>au.currentTime=seek.value;
 $('#p-back').onclick=()=>{au.pause();sheetClose();show('s-app');render()};
 $('#p-fav').onclick=()=>{toggleFav(lesson.id);$('#p-fav').classList.toggle('on')};
-$('#p-edit').onclick=async()=>{const v=await ask(t('editT'),'area',lesson.transcript);if(v!==null){lesson.transcript=v;await put(lesson);renderLyrics()}};
+$('#p-edit').onclick=async()=>{
+  const v=await ask(t('editT'),'area',lesson.transcript);
+  if(v!==null)try{Object.assign(lesson,await api('items','PATCH',{id:lesson.id,transcript:v}));renderLyrics()}catch(e){alert(e.message)}
+};
+$('#p-tr').onclick=async()=>{
+  const it=lesson,b=$('#p-tr');b.disabled=true;
+  $('#lyrics').innerHTML=`<div class="empty">${I.text}<p>${t('transcribing')}</p></div>`;
+  try{Object.assign(it,await transcribe(it.id))}catch(e){alert(e.message)}
+  b.disabled=false;if(lesson===it)renderLyrics();
+};
 document.addEventListener('keydown',e=>{
   if($('#s-player').hidden||/INPUT|TEXTAREA/.test(e.target.tagName)||$('#dlg').open)return;
   if(e.key===' '){e.preventDefault();$('#pp').click()}
@@ -409,7 +441,10 @@ $('#sh-save').onclick=()=>setMark({word:sel.word,note:$('#sh-note').value.trim()
 
 /* ---------- boot ---------- */
 document.querySelectorAll('[data-i]').forEach(e=>e.innerHTML=I[e.dataset.i]);
-if(!lang)show('s-lang');else{applyLang();sessionStorage.getItem('in')?openApp():show('s-entry')}
+(async()=>{
+  admin=await api('login').then(d=>d.admin,()=>false);
+  if(!lang)show('s-lang');else{applyLang();admin||sessionStorage.getItem('in')?openApp():show('s-entry')}
+})();
 </script>
 </body>
 </html>
