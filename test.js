@@ -1,4 +1,13 @@
 import assert from 'node:assert';
+import { readFileSync } from 'node:fs';
+import vm from 'node:vm';
+
+const page = {}; vm.runInNewContext(readFileSync('subs.js', 'utf8') + ';this.fromSubs=fromSubs', page);
+const srt = '1\r\n00:00:01,500 --> 00:00:04,000\r\nبسم الله\r\nالرحمن الرحيم\r\n\r\n2\r\n01:02:03,250 --> 01:02:05,000\r\n<i>next</i>\r\n';
+assert.strictEqual(page.fromSubs(srt), '[0:01.5] بسم الله الرحمن الرحيم\n[62:03.3] next');
+const vtt = 'WEBVTT\n\n00:05.000 --> 00:07.000\nhello\n\nNOTE comment\n\n1:10.000 --> 1:12.000\nworld';
+assert.strictEqual(page.fromSubs(vtt), '[0:05.0] hello\n[1:10.0] world');
+assert.strictEqual(page.fromSubs('  [0:03] already timed\nplain  '), '[0:03] already timed\nplain');
 import { makeToken, checkToken, samePassword, parseRange, piece, CHUNK } from './api/_lib.js';
 
 assert.deepStrictEqual(parseRange(null, 100), [0, 99]);

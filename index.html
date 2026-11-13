@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Majlis al-Ilm</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#1c1d1f">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<script src="/subs.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -111,6 +115,9 @@ input:focus,textarea:focus{border-color:var(--gold)}
 dialog{margin:auto;background:var(--s2);color:var(--text);border:1px solid var(--line);border-radius:18px;padding:20px;width:min(560px,calc(100% - 32px))}
 dialog::backdrop{background:#000a}
 dialog form{display:grid;gap:12px}
+dialog .btn.wide{justify-content:flex-start}
+.btn:disabled{opacity:.45;pointer-events:none}
+.hint{font-size:.85rem;margin:-10px 0 18px}
 @media (max-width:420px){.btn.icon{width:38px;height:38px}.brand{font-size:1.1rem}}
 </style>
 </head>
@@ -157,6 +164,7 @@ dialog form{display:grid;gap:12px}
     <button class="brand" id="home"><span data-i="star"></span><span data-t="brand"></span></button>
     <span class="badge" id="badge" data-t="adminBadge" hidden></span>
     <div class="sp"></div>
+    <button class="btn icon" id="install" data-ti="install" data-i="phone" hidden></button>
     <button class="btn icon" id="to-saved" data-ti="saved" data-i="bookmark"></button>
     <button class="btn icon" id="tog-lang"></button>
     <button class="btn icon" id="exit" data-ti="exit"><span data-i="exit" class="flip"></span></button>
@@ -168,8 +176,10 @@ dialog form{display:grid;gap:12px}
   <header class="top">
     <button class="btn icon" id="p-back" data-ti="back"><span data-i="back" class="flip"></span></button>
     <div class="ptitle"><small id="p-folder"></small><b id="p-name"></b></div>
-    <button class="btn icon" id="p-tr" data-ti="transcribe" data-i="text"></button>
+    <button class="btn icon" id="p-imp" data-ti="importT" data-i="text"></button>
+    <input type="file" id="imp-file" accept=".srt,.vtt,.txt,text/plain" hidden>
     <button class="btn icon" id="p-edit" data-ti="editT" data-i="pen"></button>
+    <button class="btn icon" id="p-dl" data-ti="download" data-i="down"></button>
     <button class="btn icon fav" id="p-fav" data-ti="favs" data-i="star"></button>
   </header>
   <div id="lyrics"></div>
@@ -200,25 +210,40 @@ dialog form{display:grid;gap:12px}
   <div class="row end"><button class="btn gold" value="ok" id="dlg-ok"></button><button class="btn" value="cancel" data-t="cancel"></button></div>
 </form></dialog>
 
+<dialog id="dl"><form method="dialog">
+  <h3 id="dl-t" dir="auto"></h3>
+  <button type="button" class="btn wide" id="dl-a"><span data-i="down"></span><span data-t="dlAudio"></span></button>
+  <button type="button" class="btn wide" id="dl-x"><span data-i="text"></span><span data-t="dlText"></span></button>
+  <button type="button" class="btn wide gold" id="dl-o"><span data-i="phone"></span><span></span></button>
+  <small class="mute" id="dl-s"></small>
+  <div class="row end"><button class="btn" value="cancel" data-t="close"></button></div>
+</form></dialog>
+
 <script>
 const T={
 en:{brand:'Majlis al-Ilm',entryQ:'How would you like to enter?',admin:'Are you an admin?',cont:'Continue',pass:'Password',enter:'Enter',wrong:'Incorrect password',back:'Back',
   classes:'Classes',newFolder:'New folder',upload:'Upload audio',saved:'Saved',favs:'Favourites',highlights:'Highlights & notes',
   empty:'Nothing here yet',emptyAdmin:'Create a folder or upload audio to begin.',noTranscript:'No transcript yet.',editT:'Edit transcript',
-  tHelp:'One line per sentence. Optional timing per line: [01:23] text — without timings, lines are spread across the audio.',
+  tHelp:'Paste an .srt / .vtt subtitle file, or one line per sentence with optional timing: [01:23] text. Without timings, lines are spread across the audio.',
   rename:'Rename',delQ:'Delete “%”? This also removes everything inside it.',ok:'Save',del:'Delete',cancel:'Cancel',
   playHere:'Play from here',hl:'Highlight',unhl:'Remove highlight',notePh:'Add a note…',saveNote:'Save note',exit:'Exit',adminBadge:'Admin',
-  uploading:'Uploading %',transcribe:'Transcribe audio',transcribing:'Transcribing…',
-  loadingModel:'Downloading speech model (first time only) %',keepOpen:'Keep this tab open until it finishes.',
+  uploading:'Uploading %',importT:'Import transcript (.srt / .vtt / .txt)',
+  upHint:'Tip: select each audio file together with its .srt or .vtt file (same name) to add the transcript in one go.',
+  download:'Download / offline',dlAudio:'Download audio',dlText:'Download transcript',saveOff:'Save for offline listening',removeOff:'Remove offline copy',
+  offOn:'Saved on this device — plays without internet.',saving:'Saving…',close:'Close',install:'Install app',
+  downloaded:'Saved for offline',noDownloads:'Nothing saved yet — open a lesson and tap the download button.',
   items:'% items',lesson:'Lesson',noFavs:'No favourites yet — tap the star on any class.',noHl:'Tap any word in a lesson transcript to highlight it or add a note.'},
 ar:{brand:'مجلس العلم',entryQ:'كيف تريد الدخول؟',admin:'هل أنت مشرف؟',cont:'متابعة',pass:'كلمة المرور',enter:'دخول',wrong:'كلمة المرور غير صحيحة',back:'رجوع',
   classes:'الدروس',newFolder:'مجلد جديد',upload:'رفع تسجيل صوتي',saved:'المحفوظات',favs:'المفضلة',highlights:'التظليلات والملاحظات',
   empty:'لا يوجد شيء بعد',emptyAdmin:'أنشئ مجلداً أو ارفع تسجيلاً صوتياً للبدء.',noTranscript:'لا يوجد نص بعد.',editT:'تعديل النص',
-  tHelp:'سطر لكل جملة. توقيت اختياري لكل سطر: [01:23] النص — بدون توقيت تُوزَّع الأسطر على مدة التسجيل.',
+  tHelp:'الصق ملف ترجمة ‎.srt / .vtt‎، أو سطراً لكل جملة مع توقيت اختياري: [01:23] النص. بدون توقيت تُوزَّع الأسطر على مدة التسجيل.',
   rename:'إعادة تسمية',delQ:'حذف «%»؟ سيُحذف كل ما بداخله أيضاً.',ok:'حفظ',del:'حذف',cancel:'إلغاء',
   playHere:'تشغيل من هنا',hl:'تظليل',unhl:'إزالة التظليل',notePh:'أضف ملاحظة…',saveNote:'حفظ الملاحظة',exit:'خروج',adminBadge:'مشرف',
-  uploading:'جارٍ الرفع %',transcribe:'تحويل الصوت إلى نص',transcribing:'جارٍ التحويل إلى نص…',
-  loadingModel:'تنزيل نموذج التعرّف على الكلام (مرة واحدة فقط) %',keepOpen:'أبقِ هذه الصفحة مفتوحة حتى ينتهي.',
+  uploading:'جارٍ الرفع %',importT:'استيراد النص (‎.srt / .vtt / .txt‎)',
+  upHint:'نصيحة: اختر كل ملف صوتي مع ملف ‎.srt‎ أو ‎.vtt‎ الخاص به (بنفس الاسم) لإضافة النص مباشرة.',
+  download:'تنزيل / بدون إنترنت',dlAudio:'تنزيل الصوت',dlText:'تنزيل النص',saveOff:'حفظ للاستماع بدون إنترنت',removeOff:'حذف النسخة المحفوظة',
+  offOn:'محفوظ على هذا الجهاز — يعمل بدون إنترنت.',saving:'جارٍ الحفظ…',close:'إغلاق',install:'تثبيت التطبيق',
+  downloaded:'محفوظ بدون إنترنت',noDownloads:'لا يوجد شيء محفوظ بعد — افتح درساً واضغط زر التنزيل.',
   items:'% عناصر',lesson:'درس',noFavs:'لا توجد مفضلة بعد — اضغط على النجمة في أي درس.',noHl:'اضغط على أي كلمة في نص الدرس لتظليلها أو إضافة ملاحظة.'}};
 
 const S=d=>`<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
@@ -239,7 +264,9 @@ const I={
  bookmark:S('<path d="M6 3h12v18l-6-4-6 4z"/>'),
  exit:S('<path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/>'),
  x:S('<path d="M6 6l12 12M18 6L6 18"/>'),
- text:S('<path d="M4 6h16M4 11h16M4 16h9"/><path d="M17 15l1.2 2.3 2.3 1.2-2.3 1.2L17 22l-1.2-2.3-2.3-1.2 2.3-1.2z" fill="currentColor"/>')};
+ text:S('<path d="M4 6h16M4 11h16M4 16h10M4 21h7"/>'),
+ down:S('<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>'),
+ phone:S('<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M12 8v6M9.5 11.5 12 14l2.5-2.5"/>')};
 
 const $=s=>document.querySelector(s), au=$('#au'), seek=$('#seek');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
@@ -260,42 +287,22 @@ async function api(path,method='GET',body){
 const all=async()=>cache=await api('items'), get=id=>cache.find(i=>i.id===id);
 const CHUNK=4e6; // same as CHUNK in api/_lib.js
 
-/* ---------- speech-to-text, in the admin's browser (no outside service) ---------- */
-// Whisper via transformers.js. Model files download once from Hugging Face, then the browser caches them.
-let asr;
-async function getAsr(status){
-  return asr??=(async()=>{
-    const {pipeline}=await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1');
-    const gpu=!!(await navigator.gpu?.requestAdapter().catch(()=>null)),files={};
-    // ponytail: big model only with a GPU; CPU fallback uses whisper-small (weaker Arabic, but finishes)
-    return pipeline('automatic-speech-recognition',gpu?'onnx-community/whisper-large-v3-turbo':'onnx-community/whisper-small',{
-      device:gpu?'webgpu':'wasm',
-      dtype:gpu?{encoder_model:'fp16',decoder_model_merged:'q4'}:'q8',
-      progress_callback:p=>{ // model files download in parallel; show one combined %
-        if(p.status!=='progress'||!/\.onnx$/.test(p.file))return;
-        files[p.file]=[p.loaded,p.total];
-        const [l,n]=Object.values(files).reduce(([a,b],[c,d])=>[a+c,b+d],[0,0]);
-        status(t('loadingModel').replace('%',Math.round(l/n*100)+'%'));
-      },
-    });
-  })().catch(e=>{asr=null;throw e});
-}
-const ts=s=>`${Math.floor(s/60)}:${(s%60).toFixed(1).padStart(4,'0')}`;
-async function transcribe(it,audio,status){
-  const ctx=new AudioContext({sampleRate:16000});
-  const pcm=(await ctx.decodeAudioData(await audio.arrayBuffer())).getChannelData(0);ctx.close();
-  const pipe=await getAsr(status);
-  status(t('transcribing'));
-  const out=await pipe(pcm,{return_timestamps:true,chunk_length_s:30,stride_length_s:5,task:'transcribe'});
-  const text=(out.chunks||[]).filter(c=>c.text.trim()).map(c=>`[${ts(c.timestamp[0]||0)}] ${c.text.trim()}`).join('\n')||out.text.trim();
-  return Object.assign(it,await api('items','PATCH',{id:it.id,transcript:text}));
-}
-// Re-download a stored lesson piece by piece (same Range requests the player makes).
+const setTranscript=async(it,text)=>Object.assign(it,await api('items','PATCH',{id:it.id,transcript:fromSubs(text)}));
+
+/* ---------- downloads & offline copies ---------- */
+// Whole file, fetched piece by piece with the same Range requests the player makes (served from the offline copy if saved).
 async function fetchAudio(it){
   const parts=[];
   for(let s=0;s<it.size;){const b=await (await fetch(`/api/audio?id=${it.id}`,{headers:{range:`bytes=${s}-`}})).blob();if(!b.size)break;parts.push(b);s+=b.size}
   return new Blob(parts,{type:it.mime});
 }
+const EXT={mpeg:'mp3',mp4:'m4a','x-m4a':'m4a','x-wav':'wav'};
+const fileName=(it,ext)=>it.name.replace(/[\\/:*?"<>|]/g,'_')+'.'+ext;
+function saveFile(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),60000)}
+// Offline copies live in Cache Storage; sw.js answers the player's Range requests from them.
+const offKey=id=>'/offline/'+id, offCache=()=>caches.open('offline');
+const isOffline=async id=>'caches' in window&&!!(await (await offCache()).match(offKey(id)));
+const offlineIds=async()=>'caches' in window?(await (await offCache()).keys()).map(r=>r.url.split('/').pop()):[];
 
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!==id)}
 function applyLang(){
@@ -353,7 +360,8 @@ async function renderFolder(id){
   const kids=items.filter(i=>i.parent===id).sort((a,b)=>a.type.localeCompare(b.type)||a.created-b.created);
   $('#view').innerHTML=`<nav class="crumbs"><button data-go="root">${t('classes')}</button>${path.map(p=>`<span>/</span><button data-go="${p.id}">${esc(p.name)}</button>`).join('')}</nav>
   <div class="head"><h1>${esc(id==='root'?t('classes'):byId[id].name)}</h1>
-  ${admin?`<div class="row"><button class="btn" id="mk">${I.plus}${t('newFolder')}</button><label class="btn gold">${I.up}<span id="up-t">${t('upload')}</span><input type="file" id="file" accept="audio/*,.ogg,.oga,.opus,.m4a,.mp3" multiple hidden></label></div>`:''}</div>
+  ${admin?`<div class="row"><button class="btn" id="mk">${I.plus}${t('newFolder')}</button><label class="btn gold">${I.up}<span id="up-t">${t('upload')}</span><input type="file" id="file" accept="audio/*,.ogg,.oga,.opus,.m4a,.mp3,.srt,.vtt,.txt" multiple hidden></label></div>`:''}</div>
+  ${admin?`<p class="mute hint">${t('upHint')}</p>`:''}
   ${kids.length?`<div class="grid">${kids.map(i=>card(i,count(i))).join('')}</div>`:`<div class="empty">${I.arch}<p>${t('empty')}</p>${admin?`<small>${t('emptyAdmin')}</small>`:''}</div>`}`;
 }
 
@@ -361,8 +369,11 @@ async function renderSaved(){
   const items=await all(), byId=Object.fromEntries(items.map(i=>[i.id,i]));
   const fv=favs.filter(id=>byId[id]).map(id=>byId[id]);
   const hl=Object.entries(marks).filter(([id,m])=>byId[id]&&Object.keys(m).length);
+  const off=(await offlineIds().catch(()=>[])).filter(id=>byId[id]).map(id=>byId[id]);
   $('#view').innerHTML=`<nav class="crumbs"><button data-go="root">${t('classes')}</button></nav>
   <div class="head"><h1>${t('saved')}</h1></div>
+  <h3 class="sec">${t('downloaded')}</h3>
+  ${off.length?`<div class="grid">${off.map(i=>card(i)).join('')}</div>`:`<p class="mute">${t('noDownloads')}</p>`}
   <h3 class="sec">${t('favs')}</h3>
   ${fv.length?`<div class="grid">${fv.map(i=>card(i,items.filter(c=>c.parent===i.id).length)).join('')}</div>`:`<p class="mute">${t('noFavs')}</p>`}
   <h3 class="sec">${t('highlights')}</h3>
@@ -386,11 +397,13 @@ $('#view').onclick=async e=>{
 $('#view').onkeydown=e=>{if(e.key==='Enter'&&e.target.dataset.open)e.target.click()};
 $('#view').onchange=async e=>{
   if(e.target.id!=='file')return;
-  const files=[...e.target.files],done=[];
+  // audio + matching .srt/.vtt/.txt (same file name) can be picked together
+  const picked=[...e.target.files],isSub=f=>/\.(srt|vtt|txt)$/i.test(f.name),base=f=>f.name.replace(/\.[^.]+$/,'');
+  const files=picked.filter(f=>!isSub(f)),subs=Object.fromEntries(picked.filter(isSub).map(f=>[base(f),f]));
   try{
     for(const [n,f] of files.entries()){
       const prog=p=>$('#up-t').textContent=t('uploading').replace('%',`${n+1}/${files.length} · ${Math.round(p)}%`);
-      const row=await api('items','POST',{type:'lesson',name:f.name.replace(/\.[^.]+$/,''),parent:cur,mime:f.type,size:f.size});
+      const row=await api('items','POST',{type:'lesson',name:base(f),parent:cur,mime:f.type,size:f.size});
       try{
         for(let i=0;i*CHUNK<f.size;i++){
           prog(i*CHUNK/f.size*100);
@@ -398,14 +411,9 @@ $('#view').onchange=async e=>{
           if(!r.ok)throw new Error((await r.json().catch(()=>({}))).error||'Upload failed ('+r.status+')');
         }
       }catch(err){await api('items','DELETE',{id:row.id}).catch(()=>{});throw err}
-      done.push([row,f]);
+      if(subs[base(f)])await setTranscript(row,await subs[base(f)].text());
     }
   }catch(err){alert(err.message)}
-  // all files are saved first; transcripts follow (the Transcribe button in the player retries any that fail)
-  for(const [n,[row,f]] of done.entries()){
-    try{await transcribe(row,f,s=>$('#up-t')&&($('#up-t').textContent=`${n+1}/${done.length} · ${s}`))}
-    catch(err){alert(row.name+': '+err.message)}
-  }
   render();
 };
 
@@ -422,7 +430,7 @@ async function openLesson(it){
   lesson=it;sheetClose();
   $('#p-name').textContent=it.name;
   const f=get(it.parent);$('#p-folder').textContent=f?f.name:t('classes');
-  $('#p-edit').hidden=$('#p-tr').hidden=!admin;$('#p-fav').classList.toggle('on',favs.includes(it.id));
+  $('#p-edit').hidden=$('#p-imp').hidden=!admin;$('#p-fav').classList.toggle('on',favs.includes(it.id));
   au.src='/api/audio?id='+encodeURIComponent(it.id);
   show('s-player');renderLyrics();
 }
@@ -458,17 +466,37 @@ $('#p-back').onclick=()=>{au.pause();sheetClose();show('s-app');render()};
 $('#p-fav').onclick=()=>{toggleFav(lesson.id);$('#p-fav').classList.toggle('on')};
 $('#p-edit').onclick=async()=>{
   const v=await ask(t('editT'),'area',lesson.transcript);
-  if(v!==null)try{Object.assign(lesson,await api('items','PATCH',{id:lesson.id,transcript:v}));renderLyrics()}catch(e){alert(e.message)}
+  if(v!==null)try{await setTranscript(lesson,v);renderLyrics()}catch(e){alert(e.message)}
 };
-$('#p-tr').onclick=async()=>{
-  const it=lesson,b=$('#p-tr');b.disabled=true;
-  const status=s=>{if(lesson===it)$('#lyrics').innerHTML=`<div class="empty">${I.text}<p>${esc(s)}</p><small>${t('keepOpen')}</small></div>`};
-  status(t('transcribing'));
-  try{await transcribe(it,await fetchAudio(it),status)}catch(e){alert(e.message)}
-  b.disabled=false;if(lesson===it)renderLyrics();
+$('#p-imp').onclick=()=>$('#imp-file').click();
+$('#imp-file').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';
+  if(f)try{await setTranscript(lesson,await f.text());renderLyrics()}catch(err){alert(err.message)}
 };
+
+// download / offline dialog
+async function dlState(){
+  const on=await isOffline(lesson.id).catch(()=>false);
+  $('#dl-o span:last-child').textContent=t(on?'removeOff':'saveOff');$('#dl-s').textContent=on?t('offOn'):'';
+  $('#dl-x').disabled=!lesson.transcript;$('#dl-o').hidden=!('caches' in window);
+}
+$('#p-dl').onclick=()=>{$('#dl-t').textContent=lesson.name;dlState();$('#dl').showModal()};
+const busy=async(b,fn)=>{b.disabled=true;try{await fn()}catch(e){alert(e.message)}b.disabled=false;dlState()};
+$('#dl-a').onclick=e=>busy(e.currentTarget,async()=>{
+  $('#dl-s').textContent=t('saving');const it=lesson,sub=(it.mime||'audio/ogg').split('/')[1];
+  saveFile(await fetchAudio(it),fileName(it,EXT[sub]||sub));
+});
+$('#dl-x').onclick=()=>saveFile(new Blob(['﻿'+lesson.transcript],{type:'text/plain;charset=utf-8'}),fileName(lesson,'txt'));
+$('#dl-o').onclick=e=>busy(e.currentTarget,async()=>{
+  const it=lesson,c=await offCache();
+  if(await c.match(offKey(it.id)))return void await c.delete(offKey(it.id));
+  $('#dl-s').textContent=t('saving');
+  navigator.storage?.persist?.(); // ask the browser not to evict offline lessons
+  await c.put(offKey(it.id),new Response(await fetchAudio(it),{headers:{'content-type':it.mime||'audio/ogg'}}));
+});
+
 document.addEventListener('keydown',e=>{
-  if($('#s-player').hidden||/INPUT|TEXTAREA/.test(e.target.tagName)||$('#dlg').open)return;
+  if($('#s-player').hidden||/INPUT|TEXTAREA/.test(e.target.tagName)||$('#dlg').open||$('#dl').open)return;
   if(e.key===' '){e.preventDefault();$('#pp').click()}
   if(e.key==='ArrowLeft')$('#rw').click();
   if(e.key==='ArrowRight')$('#ff').click();
@@ -487,6 +515,13 @@ $('#sh-x').onclick=sheetClose;
 $('#sh-play').onclick=()=>{playLine(+sel.k.split('-')[0]);sheetClose()};
 $('#sh-hl').onclick=()=>setMark((marks[lesson.id]||{})[sel.k]?null:{word:sel.word,note:''});
 $('#sh-save').onclick=()=>setMark({word:sel.word,note:$('#sh-note').value.trim()});
+
+/* ---------- install as app (PWA) ---------- */
+// Chrome/Edge/Android show the button; on iPhone it's Share → Add to Home Screen.
+let installEvt;
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;$('#install').hidden=false});
+$('#install').onclick=()=>{installEvt?.prompt();installEvt=null;$('#install').hidden=true};
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
 
 /* ---------- boot ---------- */
 document.querySelectorAll('[data-i]').forEach(e=>e.innerHTML=I[e.dataset.i]);

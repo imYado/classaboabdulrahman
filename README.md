@@ -10,8 +10,11 @@ Static `index.html` + Vercel functions in `api/`. Everything is stored in Neon, 
 
 Tables are created on first request. Favourites and highlights are stored per device.
 
-Speech-to-text runs in the admin's browser (Whisper via transformers.js) right after upload; no API key.
-With a GPU (Chrome/Edge on a laptop) it uses whisper-large-v3-turbo, otherwise whisper-small.
-The model downloads once from Hugging Face and is cached by the browser.
+Transcripts: upload an `.srt` / `.vtt` (from any transcription site) together with the audio file of the
+same name, or import / paste it later from the lesson page. `subs.js` converts it to timed lines.
+
+Listeners can download the audio and transcript, or save a lesson for offline listening.
+`sw.js` (service worker) keeps the app and library available offline and plays saved lessons from Cache Storage.
+The site installs as an app (PWA) via `manifest.webmanifest`.
 
 Check: `npm test`
