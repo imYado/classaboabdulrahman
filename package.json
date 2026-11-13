@@ -1,9 +1,10 @@
 {
   "private": true,
   "type": "module",
-  "scripts": { "test": "node test.js" },
+  "scripts": {
+    "test": "node test.js"
+  },
   "dependencies": {
-    "@neondatabase/serverless": "^1.2.1",
-    "@vercel/blob": "^2.9.0"
+    "@neondatabase/serverless": "^1.2.1"
   }
 }
