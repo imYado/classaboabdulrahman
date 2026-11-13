@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Majlis al-Ilm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#1c1d1f;--s1:#242528;--s2:#2c2d31;--line:#38393e;--text:#e7e5e0;--mute:#94928c;--gold:#c9b27a;--edge:#6b6250;
+  --grad:linear-gradient(135deg,#6b6250 0%,#3d3e43 55%,#2c2d31 100%)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font:16px/1.6 'IBM Plex Sans Arabic',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+h1,h2,h3,.serif{font-family:'Amiri',serif;font-weight:700;line-height:1.3}
+.mute{color:var(--mute)}
+.i{width:20px;height:20px;flex:none}
+.screen{min-height:100dvh}
+.center{display:grid;place-items:center;padding:24px 16px}
+.stack{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:380px;text-align:center}
+.logo{color:var(--gold)}
+.logo .i{width:60px;height:60px;stroke-width:1.1}
+.bism{font-family:'Amiri',serif;font-size:1.7rem;color:var(--gold);line-height:1.8}
+.stack h1{font-size:2rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--s2);border:1px solid var(--line);border-radius:12px;padding:10px 16px;color:var(--text);cursor:pointer;font:inherit;transition:border-color .2s,transform .1s}
+.btn:hover{background:var(--grad);border-color:var(--edge)}
+.btn:active{transform:scale(.97)}
+.btn.big{padding:14px 22px;font-size:1.05rem}
+.btn.icon{width:42px;height:42px;padding:0}
+.btn.gold{border-color:var(--edge)}
+.wide{width:100%}
+.link{background:none;border:0;color:var(--mute);cursor:pointer;font:inherit;padding:6px}
+.link:hover{color:var(--text)}
+input,textarea{width:100%;background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--text);font:inherit;outline:none;resize:vertical}
+input:focus,textarea:focus{border-color:var(--gold)}
+.err{color:#d98b7a;font-size:.9rem}
+.shake{animation:sh .35s}
+@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row.end{flex-direction:row-reverse;justify-content:flex-start}
+[dir=rtl] .flip{transform:scaleX(-1)}
+
+/* header */
+.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--line)}
+.top::after{content:"";position:absolute;left:0;right:0;bottom:-8px;height:6px;opacity:.3;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='6'%3E%3Cpath d='M8 0l1.2 1.8L11 3 9.2 4.2 8 6 6.8 4.2 5 3l1.8-1.2z' fill='%23c9b27a'/%3E%3C/svg%3E") repeat-x}
+.brand{display:flex;align-items:center;gap:8px;background:none;border:0;color:var(--text);font:700 1.25rem 'Amiri',serif;cursor:pointer;white-space:nowrap}
+.brand .i{color:var(--gold);width:24px;height:24px}
+.badge{font-size:.72rem;padding:1px 8px;border:1px solid var(--gold);color:var(--gold);border-radius:99px}
+.sp{flex:1}
+
+/* library */
+#view{max-width:1000px;margin:0 auto;padding:22px 16px 60px}
+.crumbs{display:flex;flex-wrap:wrap;gap:6px;color:var(--mute);font-size:.9rem}
+.crumbs button{background:none;border:0;color:inherit;cursor:pointer;font:inherit}
+.crumbs button:hover{color:var(--gold)}
+.head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 20px}
+.head h1{font-size:2rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.card{display:flex;align-items:center;gap:14px;padding:16px;background:var(--s1);border:1px solid var(--line);border-radius:16px;cursor:pointer;transition:border-color .2s,transform .2s;outline:none}
+.card:hover,.card:focus-visible{background:var(--grad);border-color:var(--edge);transform:translateY(-2px)}
+.card .ic{width:50px;height:54px;border-radius:12px;display:grid;place-items:center;background:var(--s2);color:var(--gold);flex:none}
+.card.folder .ic{border-radius:25px 25px 8px 8px}
+.card .ic .i{width:26px;height:26px}
+.meta{flex:1;min-width:0}
+.meta b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.meta small{color:var(--mute)}
+.acts{display:flex}
+.ib{background:none;border:0;color:var(--mute);width:34px;height:34px;display:grid;place-items:center;border-radius:8px;cursor:pointer}
+.ib:hover{color:var(--text);background:#ffffff14}
+.fav.on{color:var(--gold)}
+.fav.on .i{fill:currentColor}
+.empty{text-align:center;color:var(--mute);padding:60px 16px;display:grid;justify-items:center;gap:10px}
+.empty .i{width:42px;height:42px;color:var(--gold);opacity:.6}
+.sec{font-size:1.3rem;margin:28px 0 12px;color:var(--gold)}
+.hlgroup{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px}
+.hlhead{display:flex;align-items:center;gap:8px;background:none;border:0;color:var(--text);cursor:pointer;font:inherit;margin-bottom:10px}
+.hlhead .i{color:var(--gold)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:#c9b27a1f;border:1px solid #c9b27a50;border-radius:10px;padding:6px 10px;cursor:pointer;display:flex;flex-direction:column}
+.chip small{color:var(--mute);font-size:.8rem}
+
+/* player */
+#s-player{display:flex;flex-direction:column;height:100dvh}
+.ptitle{flex:1;min-width:0;text-align:center}
+.ptitle small{display:block;color:var(--mute);font-size:.8rem}
+.ptitle b{display:block;font:700 1.2rem 'Amiri',serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#lyrics{flex:1;min-height:0;overflow-y:auto;padding:28vh 20px 40vh;max-width:780px;width:100%;margin:0 auto}
+.ln{font-size:clamp(1.35rem,4.5vw,2.1rem);font-weight:600;line-height:1.55;margin:0 0 .8em;color:#5f5e5b;transition:color .35s;cursor:pointer}
+.ln.past{color:#85847f}
+.ln.on{color:var(--text)}
+.ln:hover{color:#b5b3ad}
+.w{border-radius:6px;padding:0 2px;transition:background .2s}
+.w:hover{background:#ffffff14}
+.w.hl{background:#c9b27a40;color:#f3e7c8}
+.w.nt{text-decoration:underline dotted var(--gold);text-underline-offset:7px}
+.w.sel{outline:2px solid var(--gold)}
+.dock{border-top:1px solid var(--line);padding:14px 16px calc(14px + env(safe-area-inset-bottom))}
+.prog,.controls{direction:ltr;max-width:640px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.prog span{font-size:.8rem;color:var(--mute);min-width:42px;text-align:center;font-variant-numeric:tabular-nums}
+#seek{flex:1;accent-color:var(--gold);padding:0;border:0;background:none}
+.controls{justify-content:center;gap:28px;margin-top:10px}
+.controls .btn.icon{border-radius:50%;width:50px;height:50px}
+.controls .i{width:26px;height:26px}
+.btn.play{width:66px;height:66px;border-radius:50%;padding:0;border-color:var(--edge)}
+.btn.play .i{width:28px;height:28px}
+.sheet{position:fixed;left:50%;transform:translateX(-50%);bottom:160px;width:min(520px,calc(100% - 32px));background:var(--s2);border:1px solid var(--line);border-radius:18px;padding:16px;display:grid;gap:12px;box-shadow:0 20px 50px #0009;z-index:10}
+.sheet .between{justify-content:space-between;align-items:center;flex-wrap:nowrap}
+#sh-word{font-size:1.6rem}
+
+dialog{margin:auto;background:var(--s2);color:var(--text);border:1px solid var(--line);border-radius:18px;padding:20px;width:min(560px,calc(100% - 32px))}
+dialog::backdrop{background:#000a}
+dialog form{display:grid;gap:12px}
+@media (max-width:420px){.btn.icon{width:38px;height:38px}.brand{font-size:1.1rem}}
+</style>
+</head>
+<body>
+<audio id="au" preload="metadata"></audio>
+
+<section id="s-lang" class="screen center">
+  <div class="stack">
+    <span data-i="star" class="logo"></span>
+    <p class="bism">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+    <h1>مجلس العلم<br><span class="mute" style="font-size:1.1rem">Majlis al-Ilm</span></h1>
+    <p class="mute">Choose your language · اختر لغتك</p>
+    <div class="row" style="justify-content:center">
+      <button class="btn big" data-lang="en">English</button>
+      <button class="btn big" data-lang="ar">العربية</button>
+    </div>
+  </div>
+</section>
+
+<section id="s-entry" class="screen center" hidden>
+  <div class="stack">
+    <span data-i="star" class="logo"></span>
+    <h1 data-t="brand"></h1>
+    <p class="mute" data-t="entryQ"></p>
+    <button class="btn big wide" id="go-admin" data-t="admin"></button>
+    <button class="btn big wide gold" id="go-user" data-t="cont"></button>
+    <button class="link" id="chg-lang">English / العربية</button>
+  </div>
+</section>
+
+<section id="s-login" class="screen center" hidden>
+  <form class="stack" id="login">
+    <span data-i="star" class="logo"></span>
+    <h2 data-t="admin"></h2>
+    <input type="password" id="pw" data-ph="pass" autocomplete="current-password">
+    <p class="err" id="pw-err" data-t="wrong" hidden></p>
+    <button class="btn big wide gold" data-t="enter"></button>
+    <button type="button" class="link" id="login-back" data-t="back"></button>
+  </form>
+</section>
+
+<section id="s-app" class="screen" hidden>
+  <header class="top">
+    <button class="brand" id="home"><span data-i="star"></span><span data-t="brand"></span></button>
+    <span class="badge" id="badge" data-t="adminBadge" hidden></span>
+    <div class="sp"></div>
+    <button class="btn icon" id="to-saved" data-ti="saved" data-i="bookmark"></button>
+    <button class="btn icon" id="tog-lang"></button>
+    <button class="btn icon" id="exit" data-ti="exit"><span data-i="exit" class="flip"></span></button>
+  </header>
+  <main id="view"></main>
+</section>
+
+<section id="s-player" class="screen" hidden>
+  <header class="top">
+    <button class="btn icon" id="p-back" data-ti="back"><span data-i="back" class="flip"></span></button>
+    <div class="ptitle"><small id="p-folder"></small><b id="p-name"></b></div>
+    <button class="btn icon" id="p-edit" data-ti="editT" data-i="pen"></button>
+    <button class="btn icon fav" id="p-fav" data-ti="favs" data-i="star"></button>
+  </header>
+  <div id="lyrics"></div>
+  <div class="dock">
+    <div class="prog"><span id="cur">0:00</span><input type="range" id="seek" min="0" max="0" step="0.1" value="0"><span id="dur">0:00</span></div>
+    <div class="controls">
+      <button class="btn icon" id="rw" data-i="rw" aria-label="-10s"></button>
+      <button class="btn play" id="pp" data-i="play" aria-label="Play"></button>
+      <button class="btn icon" id="ff" data-i="ff" aria-label="+10s"></button>
+    </div>
+  </div>
+  <div class="sheet" id="sheet" hidden>
+    <div class="row between"><b class="serif" id="sh-word"></b><button class="ib" id="sh-x" data-i="x"></button></div>
+    <textarea id="sh-note" rows="2" data-ph="notePh" dir="auto"></textarea>
+    <div class="row">
+      <button class="btn" id="sh-play" data-t="playHere"></button>
+      <button class="btn" id="sh-hl"></button>
+      <button class="btn gold" id="sh-save" data-t="saveNote"></button>
+    </div>
+  </div>
+</section>
+
+<dialog id="dlg"><form method="dialog">
+  <h3 id="dlg-t"></h3>
+  <input id="dlg-i" autocomplete="off" dir="auto">
+  <textarea id="dlg-a" rows="10" dir="auto"></textarea>
+  <small id="dlg-h" class="mute" data-t="tHelp"></small>
+  <div class="row end"><button class="btn gold" value="ok" id="dlg-ok"></button><button class="btn" value="cancel" data-t="cancel"></button></div>
+</form></dialog>
+
+<script>
+const T={
+en:{brand:'Majlis al-Ilm',entryQ:'How would you like to enter?',admin:'Are you an admin?',cont:'Continue',pass:'Password',enter:'Enter',wrong:'Incorrect password',back:'Back',
+  classes:'Classes',newFolder:'New folder',upload:'Upload audio',saved:'Saved',favs:'Favourites',highlights:'Highlights & notes',
+  empty:'Nothing here yet',emptyAdmin:'Create a folder or upload audio to begin.',noTranscript:'No transcript yet.',editT:'Edit transcript',
+  tHelp:'One line per sentence. Optional timing per line: [01:23] text — without timings, lines are spread across the audio.',
+  rename:'Rename',delQ:'Delete “%”? This also removes everything inside it.',ok:'Save',del:'Delete',cancel:'Cancel',
+  playHere:'Play from here',hl:'Highlight',unhl:'Remove highlight',notePh:'Add a note…',saveNote:'Save note',exit:'Exit',adminBadge:'Admin',
+  items:'% items',lesson:'Lesson',noFavs:'No favourites yet — tap the star on any class.',noHl:'Tap any word in a lesson transcript to highlight it or add a note.'},
+ar:{brand:'مجلس العلم',entryQ:'كيف تريد الدخول؟',admin:'هل أنت مشرف؟',cont:'متابعة',pass:'كلمة المرور',enter:'دخول',wrong:'كلمة المرور غير صحيحة',back:'رجوع',
+  classes:'الدروس',newFolder:'مجلد جديد',upload:'رفع تسجيل صوتي',saved:'المحفوظات',favs:'المفضلة',highlights:'التظليلات والملاحظات',
+  empty:'لا يوجد شيء بعد',emptyAdmin:'أنشئ مجلداً أو ارفع تسجيلاً صوتياً للبدء.',noTranscript:'لا يوجد نص بعد.',editT:'تعديل النص',
+  tHelp:'سطر لكل جملة. توقيت اختياري لكل سطر: [01:23] النص — بدون توقيت تُوزَّع الأسطر على مدة التسجيل.',
+  rename:'إعادة تسمية',delQ:'حذف «%»؟ سيُحذف كل ما بداخله أيضاً.',ok:'حفظ',del:'حذف',cancel:'إلغاء',
+  playHere:'تشغيل من هنا',hl:'تظليل',unhl:'إزالة التظليل',notePh:'أضف ملاحظة…',saveNote:'حفظ الملاحظة',exit:'خروج',adminBadge:'مشرف',
+  items:'% عناصر',lesson:'درس',noFavs:'لا توجد مفضلة بعد — اضغط على النجمة في أي درس.',noHl:'اضغط على أي كلمة في نص الدرس لتظليلها أو إضافة ملاحظة.'}};
+
+const S=d=>`<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const TEN='<text x="12" y="15.4" font-size="7" font-weight="600" text-anchor="middle" fill="currentColor" stroke="none" font-family="system-ui,sans-serif">10</text>';
+const I={
+ star:S('<path d="M12 2.5l2.8 2.8h3.9v3.9l2.8 2.8-2.8 2.8v3.9h-3.9L12 21.5l-2.8-2.8H5.3v-3.9L2.5 12l2.8-2.8V5.3h3.9z"/>'),
+ arch:S('<path d="M5 21V10.5a7 7 0 0 1 14 0V21z"/><path d="M9.5 21v-5a2.5 2.5 0 0 1 5 0v5"/>'),
+ wave:S('<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2"/>'),
+ plus:S('<path d="M12 5v14M5 12h14"/>'),
+ up:S('<path d="M12 16V4M7 9l5-5 5 5M5 20h14"/>'),
+ pen:S('<path d="M4 20h4L19 9l-4-4L4 16z"/>'),
+ trash:S('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'),
+ play:S('<path d="M8 5v14l11-7z" fill="currentColor"/>'),
+ pause:S('<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" fill="currentColor" stroke="none"/>'),
+ rw:S('<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>'+TEN),
+ ff:S('<path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>'+TEN),
+ back:S('<path d="M15 5l-7 7 7 7"/>'),
+ bookmark:S('<path d="M6 3h12v18l-6-4-6 4z"/>'),
+ exit:S('<path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/>'),
+ x:S('<path d="M6 6l12 12M18 6L6 18"/>')};
+
+const $=s=>document.querySelector(s), au=$('#au'), seek=$('#seek');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+const fmt=s=>isFinite(s)?Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0'):'0:00';
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}};
+const store=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
+let lang=load('lang',null), admin=sessionStorage.getItem('admin')==='1', favs=load('favs',[]), marks=load('marks',{});
+let cur='root', mode='folder', lesson=null, lines=[], active=-1, sel=null;
+const t=k=>T[lang||'en'][k];
+
+// ponytail: audio lives in this browser's IndexedDB only; a shared library across devices needs a server/storage bucket.
+const db=new Promise((res,rej)=>{const r=indexedDB.open('majlis',1);r.onupgradeneeded=()=>r.result.createObjectStore('items',{keyPath:'id'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const tx=async(m,fn)=>{const d=await db;return new Promise((res,rej)=>{const q=fn(d.transaction('items',m).objectStore('items'));q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})};
+const all=()=>tx('readonly',s=>s.getAll()), get=id=>tx('readonly',s=>s.get(id));
+const put=o=>tx('readwrite',s=>s.put(o)), del=id=>tx('readwrite',s=>s.delete(id));
+async function delTree(id){const items=await all();const go=async x=>{for(const c of items.filter(i=>i.parent===x))await go(c.id);await del(x)};await go(id)}
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!==id)}
+function applyLang(){
+  document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+  document.querySelectorAll('[data-t]').forEach(e=>e.textContent=t(e.dataset.t));
+  document.querySelectorAll('[data-ph]').forEach(e=>e.placeholder=t(e.dataset.ph));
+  document.querySelectorAll('[data-ti]').forEach(e=>{e.title=t(e.dataset.ti);e.setAttribute('aria-label',e.title)});
+  $('#tog-lang').textContent=lang==='ar'?'EN':'ع';
+}
+function ask(title,kind='text',val=''){
+  const d=$('#dlg'),f=kind==='area'?$('#dlg-a'):$('#dlg-i');
+  $('#dlg-t').textContent=title;$('#dlg-i').hidden=kind!=='text';$('#dlg-a').hidden=$('#dlg-h').hidden=kind!=='area';
+  $('#dlg-ok').textContent=t(kind==='confirm'?'del':'ok');
+  f.value=val;d.returnValue='';d.showModal();if(kind!=='confirm')f.focus();
+  return new Promise(r=>d.onclose=()=>r(d.returnValue!=='ok'?null:kind==='confirm'?true:f.value.trim()));
+}
+function toggleFav(id){favs=favs.includes(id)?favs.filter(x=>x!==id):[...favs,id];store('favs',favs)}
+
+/* ---------- entry ---------- */
+document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{lang=b.dataset.lang;store('lang',lang);applyLang();show('s-entry')});
+$('#chg-lang').onclick=()=>show('s-lang');
+$('#go-admin').onclick=()=>{show('s-login');$('#pw-err').hidden=true;$('#pw').focus()};
+$('#login-back').onclick=()=>show('s-entry');
+$('#go-user').onclick=()=>{admin=false;sessionStorage.setItem('in','1');sessionStorage.removeItem('admin');openApp()};
+$('#login').onsubmit=e=>{
+  e.preventDefault();
+  // ponytail: client-side password = demo only; anyone can read it in the source. Real auth needs a backend.
+  if($('#pw').value==='123qwe'){admin=true;sessionStorage.setItem('admin','1');sessionStorage.setItem('in','1');$('#pw').value='';openApp()}
+  else{$('#pw-err').hidden=false;const f=$('#login');f.classList.remove('shake');void f.offsetWidth;f.classList.add('shake')}
+};
+$('#exit').onclick=()=>{sessionStorage.clear();admin=false;show('s-entry')};
+$('#tog-lang').onclick=()=>{lang=lang==='ar'?'en':'ar';store('lang',lang);applyLang();render()};
+$('#home').onclick=()=>{cur='root';mode='folder';render()};
+$('#to-saved').onclick=()=>{mode='saved';render()};
+function openApp(){$('#badge').hidden=!admin;cur='root';mode='folder';show('s-app');render()}
+const render=()=>mode==='saved'?renderSaved():renderFolder(cur);
+
+/* ---------- library ---------- */
+const card=(i,n)=>`<div class="card ${i.type}" data-open="${i.id}" tabindex="0">
+  <div class="ic">${i.type==='folder'?I.arch:I.wave}</div>
+  <div class="meta"><b>${esc(i.name)}</b><small>${i.type==='folder'?t('items').replace('%',n):(i.dur?fmt(i.dur):t('lesson'))}</small></div>
+  <div class="acts"><button class="ib fav${favs.includes(i.id)?' on':''}" data-fav="${i.id}" title="${t('favs')}">${I.star}</button>
+  ${admin?`<button class="ib" data-ren="${i.id}" title="${t('rename')}">${I.pen}</button><button class="ib" data-del="${i.id}" title="${t('del')}">${I.trash}</button>`:''}</div></div>`;
+
+async function renderFolder(id){
+  const items=await all(), byId=Object.fromEntries(items.map(i=>[i.id,i]));
+  if(id!=='root'&&!byId[id])id=cur='root';
+  const path=[];for(let p=id;p!=='root';p=byId[p].parent)path.unshift(byId[p]);
+  const count=f=>items.filter(c=>c.parent===f.id).length;
+  const kids=items.filter(i=>i.parent===id).sort((a,b)=>a.type.localeCompare(b.type)||a.created-b.created);
+  $('#view').innerHTML=`<nav class="crumbs"><button data-go="root">${t('classes')}</button>${path.map(p=>`<span>/</span><button data-go="${p.id}">${esc(p.name)}</button>`).join('')}</nav>
+  <div class="head"><h1>${esc(id==='root'?t('classes'):byId[id].name)}</h1>
+  ${admin?`<div class="row"><button class="btn" id="mk">${I.plus}${t('newFolder')}</button><label class="btn gold">${I.up}${t('upload')}<input type="file" id="file" accept="audio/*,.ogg,.oga,.opus,.m4a,.mp3" multiple hidden></label></div>`:''}</div>
+  ${kids.length?`<div class="grid">${kids.map(i=>card(i,count(i))).join('')}</div>`:`<div class="empty">${I.arch}<p>${t('empty')}</p>${admin?`<small>${t('emptyAdmin')}</small>`:''}</div>`}`;
+}
+
+async function renderSaved(){
+  const items=await all(), byId=Object.fromEntries(items.map(i=>[i.id,i]));
+  const fv=favs.filter(id=>byId[id]).map(id=>byId[id]);
+  const hl=Object.entries(marks).filter(([id,m])=>byId[id]&&Object.keys(m).length);
+  $('#view').innerHTML=`<nav class="crumbs"><button data-go="root">${t('classes')}</button></nav>
+  <div class="head"><h1>${t('saved')}</h1></div>
+  <h3 class="sec">${t('favs')}</h3>
+  ${fv.length?`<div class="grid">${fv.map(i=>card(i,items.filter(c=>c.parent===i.id).length)).join('')}</div>`:`<p class="mute">${t('noFavs')}</p>`}
+  <h3 class="sec">${t('highlights')}</h3>
+  ${hl.length?hl.map(([id,m])=>`<div class="hlgroup"><button class="hlhead" data-open="${id}">${I.wave}<b>${esc(byId[id].name)}</b></button>
+    <div class="chips">${Object.values(m).map(x=>`<span class="chip" data-open="${id}" dir="auto"><b>${esc(x.word)}</b>${x.note?`<small>${esc(x.note)}</small>`:''}</span>`).join('')}</div></div>`).join('')
+  :`<p class="mute">${t('noHl')}</p>`}`;
+}
+
+$('#view').onclick=async e=>{
+  const b=e.target.closest('[data-go],[data-fav],[data-ren],[data-del],[data-open],#mk');if(!b)return;
+  const d=b.dataset;
+  if(d.go){cur=d.go;mode='folder';render()}
+  else if(d.fav){toggleFav(d.fav);b.classList.toggle('on')}
+  else if(d.ren){const it=await get(d.ren),v=await ask(t('rename'),'text',it.name);if(v){it.name=v;await put(it);render()}}
+  else if(d.del){const it=await get(d.del);if(await ask(t('delQ').replace('%',it.name),'confirm')){await delTree(it.id);render()}}
+  else if(b.id==='mk'){const v=await ask(t('newFolder'));if(v){await put({id:uid(),type:'folder',name:v,parent:cur,created:Date.now()});render()}}
+  else if(d.open){const it=await get(d.open);if(it.type==='folder'){cur=it.id;mode='folder';render()}else openLesson(it)}
+};
+$('#view').onkeydown=e=>{if(e.key==='Enter'&&e.target.dataset.open)e.target.click()};
+$('#view').onchange=async e=>{
+  if(e.target.id!=='file')return;
+  for(const f of e.target.files)await put({id:uid(),type:'lesson',name:f.name.replace(/\.[^.]+$/,''),parent:cur,blob:f,transcript:'',created:Date.now()});
+  render();
+};
+
+/* ---------- player ---------- */
+function parse(text,dur){
+  const ls=text.split('\n').map(s=>s.trim()).filter(Boolean).map(s=>{const m=s.match(/^\[(\d+):(\d{1,2}(?:\.\d+)?)\]\s*(.*)$/);return m?{t:+m[1]*60+ +m[2],text:m[3]}:{t:null,text:s}});
+  if(ls.some(l=>l.t==null)){ // ponytail: untimed → spread by text length; real sync needs Whisper-style timestamps
+    const D=isFinite(dur)?dur:0,total=ls.reduce((a,l)=>a+l.text.length,0)||1;let acc=0;
+    ls.forEach(l=>{l.t=D?acc/total*D:(acc?Infinity:0);acc+=l.text.length});
+  }
+  return ls;
+}
+async function openLesson(it){
+  lesson=it;sheetClose();
+  $('#p-name').textContent=it.name;
+  const f=it.parent==='root'?null:await get(it.parent);$('#p-folder').textContent=f?f.name:t('classes');
+  $('#p-edit').hidden=!admin;$('#p-fav').classList.toggle('on',favs.includes(it.id));
+  URL.revokeObjectURL(au.src);au.src=URL.createObjectURL(it.blob);
+  show('s-player');renderLyrics();
+}
+function renderLyrics(){
+  lines=parse(lesson.transcript||'',au.duration);
+  const m=marks[lesson.id]||{};
+  // ponytail: marks keyed by line-word position; editing the transcript can shift them
+  $('#lyrics').innerHTML=lines.length?lines.map((l,li)=>`<p class="ln" data-li="${li}" dir="auto">${l.text.split(/\s+/).map((w,wi)=>{
+    const k=li+'-'+wi,x=m[k];return `<span class="w${x?' hl':''}${x?.note?' nt':''}" data-k="${k}"${x?.note?` title="${esc(x.note)}"`:''}>${esc(w)}</span>`}).join(' ')}</p>`).join('')
+    :`<div class="empty">${I.wave}<p>${t('noTranscript')}</p></div>`;
+  active=-1;sync();
+}
+function sync(){
+  seek.value=au.currentTime;$('#cur').textContent=fmt(au.currentTime);
+  let i=-1;lines.forEach((l,j)=>{if(l.t<=au.currentTime)i=j});
+  if(i===active)return;active=i;
+  document.querySelectorAll('.ln').forEach((p,j)=>{p.classList.toggle('on',j===i);p.classList.toggle('past',j<i)});
+  if(i>=0&&$('#sheet').hidden)$('.ln.on').scrollIntoView({block:'center',behavior:'smooth'});
+}
+function playLine(li){if(isFinite(lines[li]?.t)){au.currentTime=lines[li].t;au.play()}}
+au.ontimeupdate=sync;
+au.onloadedmetadata=()=>{
+  seek.max=au.duration;$('#dur').textContent=fmt(au.duration);
+  if(isFinite(au.duration)&&lesson.dur!==au.duration){lesson.dur=au.duration;put(lesson)}
+  renderLyrics();
+};
+au.onplay=au.onpause=()=>$('#pp').innerHTML=au.paused?I.play:I.pause;
+$('#pp').onclick=()=>au.paused?au.play():au.pause();
+$('#rw').onclick=()=>au.currentTime=Math.max(0,au.currentTime-10);
+$('#ff').onclick=()=>au.currentTime+=10;
+seek.oninput=()=>au.currentTime=seek.value;
+$('#p-back').onclick=()=>{au.pause();sheetClose();show('s-app');render()};
+$('#p-fav').onclick=()=>{toggleFav(lesson.id);$('#p-fav').classList.toggle('on')};
+$('#p-edit').onclick=async()=>{const v=await ask(t('editT'),'area',lesson.transcript);if(v!==null){lesson.transcript=v;await put(lesson);renderLyrics()}};
+document.addEventListener('keydown',e=>{
+  if($('#s-player').hidden||/INPUT|TEXTAREA/.test(e.target.tagName)||$('#dlg').open)return;
+  if(e.key===' '){e.preventDefault();$('#pp').click()}
+  if(e.key==='ArrowLeft')$('#rw').click();
+  if(e.key==='ArrowRight')$('#ff').click();
+});
+
+/* ---------- highlights & notes ---------- */
+$('#lyrics').onclick=e=>{const w=e.target.closest('.w'),p=e.target.closest('.ln');if(w)openSheet(w);else if(p)playLine(+p.dataset.li)};
+function openSheet(w){
+  document.querySelectorAll('.w.sel').forEach(x=>x.classList.remove('sel'));w.classList.add('sel');
+  sel={k:w.dataset.k,word:w.textContent};const x=(marks[lesson.id]||{})[sel.k];
+  $('#sh-word').textContent=sel.word;$('#sh-note').value=x?.note||'';$('#sh-hl').textContent=t(x?'unhl':'hl');$('#sheet').hidden=false;
+}
+function sheetClose(){$('#sheet').hidden=true;document.querySelectorAll('.w.sel').forEach(x=>x.classList.remove('sel'));sel=null}
+function setMark(v){const m=(marks[lesson.id]??={});if(v)m[sel.k]=v;else delete m[sel.k];store('marks',marks);sheetClose();renderLyrics()}
+$('#sh-x').onclick=sheetClose;
+$('#sh-play').onclick=()=>{playLine(+sel.k.split('-')[0]);sheetClose()};
+$('#sh-hl').onclick=()=>setMark((marks[lesson.id]||{})[sel.k]?null:{word:sel.word,note:''});
+$('#sh-save').onclick=()=>setMark({word:sel.word,note:$('#sh-note').value.trim()});
+
+/* ---------- boot ---------- */
+document.querySelectorAll('[data-i]').forEach(e=>e.innerHTML=I[e.dataset.i]);
+if(!lang)show('s-lang');else{applyLang();sessionStorage.getItem('in')?openApp():show('s-entry')}
+</script>
+</body>
+</html>
