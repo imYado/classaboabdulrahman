@@ -5,7 +5,7 @@ const bad = msg => json({ error: msg }, { status: 400 });
 
 export async function GET() {
   await db();
-  return json(await sql`select * from items order by created`);
+  return json(await sql`select * from items order by coalesce(pos, created), created`);
 }
 
 // Lessons are created first, then their audio is sent in pieces to /api/audio.
@@ -18,8 +18,9 @@ export async function POST(req) {
   if (lesson && !(Number.isInteger(b.size) && b.size > 0)) return bad('lesson needs a file size');
   const mime = lesson ? (AUDIO_MIME.test(b.mime || '') ? b.mime : 'audio/ogg') : null;
   await db();
-  const [row] = await sql`insert into items(id, type, name, parent, mime, size, created)
-    values (${newId()}, ${b.type}, ${name}, ${b.parent || 'root'}, ${mime}, ${lesson ? b.size : null}, ${Date.now()}) returning *`;
+  const now = Date.now(); // new items go to the end
+  const [row] = await sql`insert into items(id, type, name, parent, mime, size, created, pos)
+    values (${newId()}, ${b.type}, ${name}, ${b.parent || 'root'}, ${mime}, ${lesson ? b.size : null}, ${now}, ${now}) returning *`;
   return json(row);
 }
 
@@ -29,7 +30,8 @@ export async function PATCH(req) {
   const [row] = await sql`update items set
     name = coalesce(${b.name?.trim() || null}, name),
     transcript = coalesce(${b.transcript ?? null}, transcript),
-    dur = coalesce(${b.dur ?? null}, dur)
+    dur = coalesce(${b.dur ?? null}, dur),
+    pos = coalesce(${Number.isFinite(b.pos) ? b.pos : null}, pos)
     where id = ${b.id} returning *`;
   return row ? json(row) : json({ error: 'not found' }, { status: 404 });
 }

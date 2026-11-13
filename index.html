@@ -66,6 +66,7 @@ input:focus,textarea:focus{border-color:var(--gold)}
 .card .ic{width:50px;height:54px;border-radius:12px;display:grid;place-items:center;background:var(--s2);color:var(--gold);flex:none}
 .card.folder .ic{border-radius:25px 25px 8px 8px}
 .card .ic .i{width:26px;height:26px}
+.card .ic .no{font:700 1.6rem 'Amiri',serif;line-height:1}
 .meta{flex:1;min-width:0}
 .meta b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
 .meta small{color:var(--mute)}
@@ -96,9 +97,12 @@ input:focus,textarea:focus{border-color:var(--gold)}
 .ln:hover{color:#b5b3ad}
 .w{border-radius:6px;padding:0 2px;transition:background .2s}
 .w:hover{background:#ffffff14}
-.w.hl{background:#c9b27a40;color:#f3e7c8}
+.w.hl{background:#c9b27a40;color:#f3e7c8;border-radius:0}
+.w.hl.s{border-start-start-radius:6px;border-end-start-radius:6px}
+.w.hl.e{border-start-end-radius:6px;border-end-end-radius:6px}
 .w.nt{text-decoration:underline dotted var(--gold);text-underline-offset:7px}
-.w.sel{outline:2px solid var(--gold)}
+.w::selection,.ln::selection{background:#c9b27a66}
+.hint2{font-size:.85rem;margin-bottom:2em;text-align:center}
 .dock{border-top:1px solid var(--line);padding:14px 16px calc(14px + env(safe-area-inset-bottom))}
 .prog,.controls{direction:ltr;max-width:640px;margin:0 auto;display:flex;align-items:center;gap:12px}
 .prog span{font-size:.8rem;color:var(--mute);min-width:42px;text-align:center;font-variant-numeric:tabular-nums}
@@ -110,7 +114,7 @@ input:focus,textarea:focus{border-color:var(--gold)}
 .btn.play .i{width:28px;height:28px}
 .sheet{position:fixed;left:50%;transform:translateX(-50%);bottom:160px;width:min(520px,calc(100% - 32px));background:var(--s2);border:1px solid var(--line);border-radius:18px;padding:16px;display:grid;gap:12px;box-shadow:0 20px 50px #0009;z-index:10}
 .sheet .between{justify-content:space-between;align-items:center;flex-wrap:nowrap}
-#sh-word{font-size:1.6rem}
+#sh-word{font-size:1.3rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 
 dialog{margin:auto;background:var(--s2);color:var(--text);border:1px solid var(--line);border-radius:18px;padding:20px;width:min(560px,calc(100% - 32px))}
 dialog::backdrop{background:#000a}
@@ -231,6 +235,7 @@ en:{brand:'Majlis al-Ilm',entryQ:'How would you like to enter?',admin:'Are you a
   upHint:'Tip: select each audio file together with its .srt or .vtt file (same name) to add the transcript in one go.',
   download:'Download / offline',dlAudio:'Download audio',dlText:'Download transcript',saveOff:'Save for offline listening',removeOff:'Remove offline copy',
   offOn:'Saved on this device — plays without internet.',saving:'Saving…',close:'Close',install:'Install app',
+  lessonN:'Lesson %',reorder:'Reorder',done:'Done',up:'Move up',down:'Move down',selHint:'Tip: tap a word to jump there · select several words to highlight them',
   downloaded:'Saved for offline',noDownloads:'Nothing saved yet — open a lesson and tap the download button.',
   items:'% items',lesson:'Lesson',noFavs:'No favourites yet — tap the star on any class.',noHl:'Tap any word in a lesson transcript to highlight it or add a note.'},
 ar:{brand:'مجلس العلم',entryQ:'كيف تريد الدخول؟',admin:'هل أنت مشرف؟',cont:'متابعة',pass:'كلمة المرور',enter:'دخول',wrong:'كلمة المرور غير صحيحة',back:'رجوع',
@@ -243,6 +248,7 @@ ar:{brand:'مجلس العلم',entryQ:'كيف تريد الدخول؟',admin:'�
   upHint:'نصيحة: اختر كل ملف صوتي مع ملف ‎.srt‎ أو ‎.vtt‎ الخاص به (بنفس الاسم) لإضافة النص مباشرة.',
   download:'تنزيل / بدون إنترنت',dlAudio:'تنزيل الصوت',dlText:'تنزيل النص',saveOff:'حفظ للاستماع بدون إنترنت',removeOff:'حذف النسخة المحفوظة',
   offOn:'محفوظ على هذا الجهاز — يعمل بدون إنترنت.',saving:'جارٍ الحفظ…',close:'إغلاق',install:'تثبيت التطبيق',
+  lessonN:'الدرس %',reorder:'ترتيب',done:'تم',up:'تحريك لأعلى',down:'تحريك لأسفل',selHint:'نصيحة: اضغط على كلمة للانتقال إليها · حدّد عدة كلمات لتظليلها',
   downloaded:'محفوظ بدون إنترنت',noDownloads:'لا يوجد شيء محفوظ بعد — افتح درساً واضغط زر التنزيل.',
   items:'% عناصر',lesson:'درس',noFavs:'لا توجد مفضلة بعد — اضغط على النجمة في أي درس.',noHl:'اضغط على أي كلمة في نص الدرس لتظليلها أو إضافة ملاحظة.'}};
 
@@ -266,6 +272,9 @@ const I={
  x:S('<path d="M6 6l12 12M18 6L6 18"/>'),
  text:S('<path d="M4 6h16M4 11h16M4 16h10M4 21h7"/>'),
  down:S('<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>'),
+ chevUp:S('<path d="M6 15l6-6 6 6"/>'),
+ chevDown:S('<path d="M6 9l6 6 6-6"/>'),
+ sort:S('<path d="M8 20V4M4 8l4-4 4 4M16 4v16M12 16l4 4 4-4"/>'),
  phone:S('<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M12 8v6M9.5 11.5 12 14l2.5-2.5"/>')};
 
 const $=s=>document.querySelector(s), au=$('#au'), seek=$('#seek');
@@ -276,6 +285,8 @@ const store=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
 // favourites & highlights stay per device (no user accounts yet)
 let lang=load('lang',null), admin=false, favs=load('favs',[]), marks=load('marks',{});
 let cur='root', mode='folder', lesson=null, lines=[], active=-1, sel=null, cache=[];
+// highlights: marks[lessonId] = [{a:[line,word], b:[line,word], text, note}]; older single-word format is converted
+for(const [id,m] of Object.entries(marks))if(!Array.isArray(m))marks[id]=Object.entries(m).map(([k,x])=>{const p=k.split('-').map(Number);return{a:p,b:p,text:x.word,note:x.note}});
 const t=k=>T[lang||'en'][k];
 
 async function api(path,method='GET',body){
@@ -342,25 +353,39 @@ $('#exit').onclick=()=>{api('login','DELETE').catch(()=>{});sessionStorage.clear
 $('#tog-lang').onclick=()=>{lang=lang==='ar'?'en':'ar';store('lang',lang);applyLang();render()};
 $('#home').onclick=()=>{cur='root';mode='folder';render()};
 $('#to-saved').onclick=()=>{mode='saved';render()};
-function openApp(){$('#badge').hidden=!admin;cur='root';mode='folder';show('s-app');render()}
+function openApp(){$('#badge').hidden=!admin;cur='root';mode='folder';reorder=false;show('s-app');render()}
 const render=()=>(mode==='saved'?renderSaved():renderFolder(cur)).catch(e=>$('#view').innerHTML=`<div class="empty">${I.arch}<p>${esc(e.message)}</p></div>`);
 
 /* ---------- library ---------- */
+// Order within a folder = pos (admin-set); lessons are numbered by that order.
+const order=x=>Number(x.pos??x.created);
+const siblings=it=>cache.filter(c=>c.parent===it.parent&&c.type===it.type).sort((a,b)=>order(a)-order(b));
+const lessonNo=it=>siblings(it).indexOf(it)+1;
+const loc=n=>n.toLocaleString(lang==='ar'?'ar-EG':'en');
+const lessonLabel=it=>t('lessonN').replace('%',loc(lessonNo(it)));
+let reorder=false;
+async function move(id,dir){
+  const it=get(id),sib=siblings(it),o=sib[sib.indexOf(it)+dir];if(!o)return;
+  const a=order(it),b=order(o);
+  await Promise.all([api('items','PATCH',{id:it.id,pos:b}),api('items','PATCH',{id:o.id,pos:a===b?b-dir:a})]);
+  render();
+}
 const card=(i,n)=>`<div class="card ${i.type}" data-open="${i.id}" tabindex="0">
-  <div class="ic">${i.type==='folder'?I.arch:I.wave}</div>
-  <div class="meta"><b>${esc(i.name)}</b><small>${i.type==='folder'?t('items').replace('%',n):(i.dur?fmt(i.dur):t('lesson'))}</small></div>
-  <div class="acts"><button class="ib fav${favs.includes(i.id)?' on':''}" data-fav="${i.id}" title="${t('favs')}">${I.star}</button>
-  ${admin?`<button class="ib" data-ren="${i.id}" title="${t('rename')}">${I.pen}</button><button class="ib" data-del="${i.id}" title="${t('del')}">${I.trash}</button>`:''}</div></div>`;
+  <div class="ic">${i.type==='folder'?I.arch:`<b class="no">${loc(lessonNo(i))}</b>`}</div>
+  <div class="meta"><b>${esc(i.name)}</b><small>${i.type==='folder'?t('items').replace('%',n):lessonLabel(i)+(i.dur?' · '+fmt(i.dur):'')}</small></div>
+  <div class="acts">${reorder?`<button class="ib" data-mv="-1" data-id="${i.id}" title="${t('up')}">${I.chevUp}</button><button class="ib" data-mv="1" data-id="${i.id}" title="${t('down')}">${I.chevDown}</button>`
+  :`<button class="ib fav${favs.includes(i.id)?' on':''}" data-fav="${i.id}" title="${t('favs')}">${I.star}</button>
+  ${admin?`<button class="ib" data-ren="${i.id}" title="${t('rename')}">${I.pen}</button><button class="ib" data-del="${i.id}" title="${t('del')}">${I.trash}</button>`:''}`}</div></div>`;
 
 async function renderFolder(id){
   const items=await all(), byId=Object.fromEntries(items.map(i=>[i.id,i]));
   if(id!=='root'&&!byId[id])id=cur='root';
   const path=[];for(let p=id;p!=='root';p=byId[p].parent)path.unshift(byId[p]);
   const count=f=>items.filter(c=>c.parent===f.id).length;
-  const kids=items.filter(i=>i.parent===id).sort((a,b)=>a.type.localeCompare(b.type)||a.created-b.created);
+  const kids=items.filter(i=>i.parent===id).sort((a,b)=>a.type.localeCompare(b.type)||order(a)-order(b));
   $('#view').innerHTML=`<nav class="crumbs"><button data-go="root">${t('classes')}</button>${path.map(p=>`<span>/</span><button data-go="${p.id}">${esc(p.name)}</button>`).join('')}</nav>
   <div class="head"><h1>${esc(id==='root'?t('classes'):byId[id].name)}</h1>
-  ${admin?`<div class="row"><button class="btn" id="mk">${I.plus}${t('newFolder')}</button><label class="btn gold">${I.up}<span id="up-t">${t('upload')}</span><input type="file" id="file" accept="audio/*,.ogg,.oga,.opus,.m4a,.mp3,.srt,.vtt,.txt" multiple hidden></label></div>`:''}</div>
+  ${admin?`<div class="row">${kids.length>1?`<button class="btn${reorder?' gold':''}" id="ro">${I.sort}${t(reorder?'done':'reorder')}</button>`:''}<button class="btn" id="mk">${I.plus}${t('newFolder')}</button><label class="btn gold">${I.up}<span id="up-t">${t('upload')}</span><input type="file" id="file" accept="audio/*,.ogg,.oga,.opus,.m4a,.mp3,.srt,.vtt,.txt" multiple hidden></label></div>`:''}</div>
   ${admin?`<p class="mute hint">${t('upHint')}</p>`:''}
   ${kids.length?`<div class="grid">${kids.map(i=>card(i,count(i))).join('')}</div>`:`<div class="empty">${I.arch}<p>${t('empty')}</p>${admin?`<small>${t('emptyAdmin')}</small>`:''}</div>`}`;
 }
@@ -378,15 +403,17 @@ async function renderSaved(){
   ${fv.length?`<div class="grid">${fv.map(i=>card(i,items.filter(c=>c.parent===i.id).length)).join('')}</div>`:`<p class="mute">${t('noFavs')}</p>`}
   <h3 class="sec">${t('highlights')}</h3>
   ${hl.length?hl.map(([id,m])=>`<div class="hlgroup"><button class="hlhead" data-open="${id}">${I.wave}<b>${esc(byId[id].name)}</b></button>
-    <div class="chips">${Object.values(m).map(x=>`<span class="chip" data-open="${id}" dir="auto"><b>${esc(x.word)}</b>${x.note?`<small>${esc(x.note)}</small>`:''}</span>`).join('')}</div></div>`).join('')
+    <div class="chips">${Object.values(m).map(x=>`<span class="chip" data-open="${id}" dir="auto"><b>${esc(x.text)}</b>${x.note?`<small>${esc(x.note)}</small>`:''}</span>`).join('')}</div></div>`).join('')
   :`<p class="mute">${t('noHl')}</p>`}`;
 }
 
 $('#view').onclick=async e=>{
-  const b=e.target.closest('[data-go],[data-fav],[data-ren],[data-del],[data-open],#mk');if(!b)return;
+  const b=e.target.closest('[data-go],[data-fav],[data-ren],[data-del],[data-mv],[data-open],#mk,#ro');if(!b)return;
   const d=b.dataset;
   try{
     if(d.go){cur=d.go;mode='folder';render()}
+    else if(b.id==='ro'){reorder=!reorder;render()}
+    else if(d.mv){await move(d.id,+d.mv)}
     else if(d.fav){toggleFav(d.fav);b.classList.toggle('on')}
     else if(d.ren){const it=get(d.ren),v=await ask(t('rename'),'text',it.name);if(v){await api('items','PATCH',{id:it.id,name:v});render()}}
     else if(d.del){const it=get(d.del);if(await ask(t('delQ').replace('%',it.name),'confirm')){await api('items','DELETE',{id:it.id});render()}}
@@ -429,19 +456,31 @@ function parse(text,dur){
 async function openLesson(it){
   lesson=it;sheetClose();
   $('#p-name').textContent=it.name;
-  const f=get(it.parent);$('#p-folder').textContent=f?f.name:t('classes');
+  const f=get(it.parent);$('#p-folder').textContent=(f?f.name:t('classes'))+' · '+lessonLabel(it);
   $('#p-edit').hidden=$('#p-imp').hidden=!admin;$('#p-fav').classList.toggle('on',favs.includes(it.id));
   au.src='/api/audio?id='+encodeURIComponent(it.id);
   show('s-player');renderLyrics();
 }
+const P=(li,wi)=>li*1e4+wi; // word position, comparable across lines
+const words=li=>lines[li].text.split(/\s+/);
+const markAt=(li,wi)=>(marks[lesson.id]||[]).find(m=>P(...m.a)<=P(li,wi)&&P(li,wi)<=P(...m.b));
+const overlaps=r=>(marks[lesson.id]||[]).filter(m=>P(...m.b)>=P(...r.a)&&P(...m.a)<=P(...r.b));
+function rangeText(a,b){const out=[];for(let li=a[0];li<=b[0];li++){const ws=words(li);out.push(...ws.slice(li===a[0]?a[1]:0,li===b[0]?b[1]+1:ws.length))}return out.join(' ')}
 function renderLyrics(){
   lines=parse(lesson.transcript||'',au.duration);
-  const m=marks[lesson.id]||{};
-  // ponytail: marks keyed by line-word position; editing the transcript can shift them
-  $('#lyrics').innerHTML=lines.length?lines.map((l,li)=>`<p class="ln" data-li="${li}" dir="auto">${l.text.split(/\s+/).map((w,wi)=>{
-    const k=li+'-'+wi,x=m[k];return `<span class="w${x?' hl':''}${x?.note?' nt':''}" data-k="${k}"${x?.note?` title="${esc(x.note)}"`:''}>${esc(w)}</span>`}).join(' ')}</p>`).join('')
+  // ponytail: marks keyed by line/word position; editing the transcript can shift them
+  // a highlight spanning several words keeps the space inside it, so it reads as one band (s/e = start/end caps)
+  $('#lyrics').innerHTML=lines.length?`<p class="mute hint2">${t('selHint')}</p>`+lines.map((l,li)=>{const ws=words(li);return `<p class="ln" data-li="${li}" dir="auto">${ws.map((w,wi)=>{
+    const x=markAt(li,wi),joined=x&&wi<ws.length-1&&markAt(li,wi+1)===x;
+    const cls=x?` hl${x.note?' nt':''}${markAt(li,wi-1)!==x?' s':''}${joined?'':' e'}`:'';
+    return `<span class="w${cls}" data-k="${li}-${wi}"${x?.note?` title="${esc(x.note)}"`:''}>${esc(w)}${joined?' ':''}</span>${joined||wi===ws.length-1?'':' '}`}).join('')}</p>`}).join('')
     :`<div class="empty">${I.wave}<p>${t('noTranscript')}</p></div>`;
   active=-1;sync();
+}
+// Words have no timestamps of their own: estimate from the word's place between this line's start and the next.
+function seekTo(li,wi){
+  const l=lines[li],end=lines[li+1]?.t??au.duration,s=isFinite(end)&&end>l.t?l.t+(end-l.t)*wi/words(li).length:l.t;
+  if(isFinite(s)){au.currentTime=s;au.play()}
 }
 function sync(){
   seek.value=au.currentTime;$('#cur').textContent=fmt(au.currentTime);
@@ -450,7 +489,6 @@ function sync(){
   document.querySelectorAll('.ln').forEach((p,j)=>{p.classList.toggle('on',j===i);p.classList.toggle('past',j<i)});
   if(i>=0&&$('#sheet').hidden)$('.ln.on').scrollIntoView({block:'center',behavior:'smooth'});
 }
-function playLine(li){if(isFinite(lines[li]?.t)){au.currentTime=lines[li].t;au.play()}}
 au.ontimeupdate=sync;
 au.onloadedmetadata=()=>{
   seek.max=au.duration;$('#dur').textContent=fmt(au.duration);
@@ -503,18 +541,42 @@ document.addEventListener('keydown',e=>{
 });
 
 /* ---------- highlights & notes ---------- */
-$('#lyrics').onclick=e=>{const w=e.target.closest('.w'),p=e.target.closest('.ln');if(w)openSheet(w);else if(p)playLine(+p.dataset.li)};
-function openSheet(w){
-  document.querySelectorAll('.w.sel').forEach(x=>x.classList.remove('sel'));w.classList.add('sel');
-  sel={k:w.dataset.k,word:w.textContent};const x=(marks[lesson.id]||{})[sel.k];
-  $('#sh-word').textContent=sel.word;$('#sh-note').value=x?.note||'';$('#sh-hl').textContent=t(x?'unhl':'hl');$('#sheet').hidden=false;
+const key=w=>w.dataset.k.split('-').map(Number);
+// tap a word → audio jumps there (tapping a highlight also shows its note)
+$('#lyrics').onclick=e=>{
+  if(!getSelection().isCollapsed)return; // end of a drag-select, not a tap
+  const w=e.target.closest('.w'),p=e.target.closest('.ln');
+  if(w){seekTo(...key(w));const m=markAt(...key(w));m?openSheet(m):sheetClose()}
+  else if(p)seekTo(+p.dataset.li,0);
+};
+// select several words (drag, or long-press + drag on phones) → highlight / note sheet for that range
+document.addEventListener('selectionchange',()=>{
+  const s=getSelection();if(s.isCollapsed||$('#s-player').hidden)return;
+  const ws=[...document.querySelectorAll('#lyrics .w')].filter(w=>s.containsNode(w,true)); // ponytail: scans every word; fine for lecture-length text
+  if(ws.length)openSheet({a:key(ws[0]),b:key(ws.at(-1))});
+});
+function openSheet(r){
+  sel={a:r.a,b:r.b};const over=overlaps(sel);
+  $('#sh-word').textContent=rangeText(sel.a,sel.b);
+  $('#sh-note').value=over.map(m=>m.note).filter(Boolean).join(' / ');
+  $('#sh-hl').textContent=t(over.length?'unhl':'hl');$('#sheet').hidden=false;
 }
-function sheetClose(){$('#sheet').hidden=true;document.querySelectorAll('.w.sel').forEach(x=>x.classList.remove('sel'));sel=null}
-function setMark(v){const m=(marks[lesson.id]??={});if(v)m[sel.k]=v;else delete m[sel.k];store('marks',marks);sheetClose();renderLyrics()}
-$('#sh-x').onclick=sheetClose;
-$('#sh-play').onclick=()=>{playLine(+sel.k.split('-')[0]);sheetClose()};
-$('#sh-hl').onclick=()=>setMark((marks[lesson.id]||{})[sel.k]?null:{word:sel.word,note:''});
-$('#sh-save').onclick=()=>setMark({word:sel.word,note:$('#sh-note').value.trim()});
+function sheetClose(){$('#sheet').hidden=true;sel=null}
+// add merges with any highlight it touches; remove deletes every highlight inside the selection
+function applyMark(add,note){
+  const over=overlaps(sel);let {a,b}=sel;
+  const ms=(marks[lesson.id]||[]).filter(m=>!over.includes(m));
+  if(add){
+    over.forEach(m=>{if(P(...m.a)<P(...a))a=m.a;if(P(...m.b)>P(...b))b=m.b});
+    ms.push({a,b,text:rangeText(a,b),note:note??over.map(m=>m.note).filter(Boolean).join(' / ')});
+    ms.sort((x,y)=>P(...x.a)-P(...y.a));
+  }
+  marks[lesson.id]=ms;store('marks',marks);getSelection().removeAllRanges();sheetClose();renderLyrics();
+}
+$('#sh-x').onclick=()=>{getSelection().removeAllRanges();sheetClose()};
+$('#sh-play').onclick=()=>{seekTo(...sel.a);sheetClose()};
+$('#sh-hl').onclick=()=>applyMark(!overlaps(sel).length);
+$('#sh-save').onclick=()=>applyMark(true,$('#sh-note').value.trim());
 
 /* ---------- install as app (PWA) ---------- */
 // Chrome/Edge/Android show the button; on iPhone it's Share → Add to Home Screen.

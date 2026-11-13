@@ -9,6 +9,7 @@ export const db = () => ready ??= sql`create table if not exists items(
   .then(() => sql`create table if not exists chunks(
     item_id text not null references items(id) on delete cascade,
     n integer not null, data bytea not null, primary key (item_id, n))`)
+  .then(() => sql`alter table items add column if not exists pos double precision`) // display order within a folder
   .catch(e => { ready = null; throw e; });
 
 // Audio lives in Neon as 4 MB pieces: Vercel caps request and response bodies at 4.5 MB.
