@@ -208,7 +208,8 @@ en:{brand:'Majlis al-Ilm',entryQ:'How would you like to enter?',admin:'Are you a
   tHelp:'One line per sentence. Optional timing per line: [01:23] text — without timings, lines are spread across the audio.',
   rename:'Rename',delQ:'Delete “%”? This also removes everything inside it.',ok:'Save',del:'Delete',cancel:'Cancel',
   playHere:'Play from here',hl:'Highlight',unhl:'Remove highlight',notePh:'Add a note…',saveNote:'Save note',exit:'Exit',adminBadge:'Admin',
-  uploading:'Uploading %',transcribe:'Transcribe audio',transcribing:'Transcribing… this can take a minute.',
+  uploading:'Uploading %',transcribe:'Transcribe audio',transcribing:'Transcribing…',
+  loadingModel:'Downloading speech model (first time only) %',keepOpen:'Keep this tab open until it finishes.',
   items:'% items',lesson:'Lesson',noFavs:'No favourites yet — tap the star on any class.',noHl:'Tap any word in a lesson transcript to highlight it or add a note.'},
 ar:{brand:'مجلس العلم',entryQ:'كيف تريد الدخول؟',admin:'هل أنت مشرف؟',cont:'متابعة',pass:'كلمة المرور',enter:'دخول',wrong:'كلمة المرور غير صحيحة',back:'رجوع',
   classes:'الدروس',newFolder:'مجلد جديد',upload:'رفع تسجيل صوتي',saved:'المحفوظات',favs:'المفضلة',highlights:'التظليلات والملاحظات',
@@ -216,7 +217,8 @@ ar:{brand:'مجلس العلم',entryQ:'كيف تريد الدخول؟',admin:'�
   tHelp:'سطر لكل جملة. توقيت اختياري لكل سطر: [01:23] النص — بدون توقيت تُوزَّع الأسطر على مدة التسجيل.',
   rename:'إعادة تسمية',delQ:'حذف «%»؟ سيُحذف كل ما بداخله أيضاً.',ok:'حفظ',del:'حذف',cancel:'إلغاء',
   playHere:'تشغيل من هنا',hl:'تظليل',unhl:'إزالة التظليل',notePh:'أضف ملاحظة…',saveNote:'حفظ الملاحظة',exit:'خروج',adminBadge:'مشرف',
-  uploading:'جارٍ الرفع %',transcribe:'تحويل الصوت إلى نص',transcribing:'جارٍ التحويل إلى نص… قد يستغرق دقيقة.',
+  uploading:'جارٍ الرفع %',transcribe:'تحويل الصوت إلى نص',transcribing:'جارٍ التحويل إلى نص…',
+  loadingModel:'تنزيل نموذج التعرّف على الكلام (مرة واحدة فقط) %',keepOpen:'أبقِ هذه الصفحة مفتوحة حتى ينتهي.',
   items:'% عناصر',lesson:'درس',noFavs:'لا توجد مفضلة بعد — اضغط على النجمة في أي درس.',noHl:'اضغط على أي كلمة في نص الدرس لتظليلها أو إضافة ملاحظة.'}};
 
 const S=d=>`<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
@@ -256,8 +258,44 @@ async function api(path,method='GET',body){
   return d;
 }
 const all=async()=>cache=await api('items'), get=id=>cache.find(i=>i.id===id);
-const transcribe=id=>api('transcribe','POST',{id});
 const CHUNK=4e6; // same as CHUNK in api/_lib.js
+
+/* ---------- speech-to-text, in the admin's browser (no outside service) ---------- */
+// Whisper via transformers.js. Model files download once from Hugging Face, then the browser caches them.
+let asr;
+async function getAsr(status){
+  return asr??=(async()=>{
+    const {pipeline}=await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1');
+    const gpu=!!(await navigator.gpu?.requestAdapter().catch(()=>null)),files={};
+    // ponytail: big model only with a GPU; CPU fallback uses whisper-small (weaker Arabic, but finishes)
+    return pipeline('automatic-speech-recognition',gpu?'onnx-community/whisper-large-v3-turbo':'onnx-community/whisper-small',{
+      device:gpu?'webgpu':'wasm',
+      dtype:gpu?{encoder_model:'fp16',decoder_model_merged:'q4'}:'q8',
+      progress_callback:p=>{ // model files download in parallel; show one combined %
+        if(p.status!=='progress'||!/\.onnx$/.test(p.file))return;
+        files[p.file]=[p.loaded,p.total];
+        const [l,n]=Object.values(files).reduce(([a,b],[c,d])=>[a+c,b+d],[0,0]);
+        status(t('loadingModel').replace('%',Math.round(l/n*100)+'%'));
+      },
+    });
+  })().catch(e=>{asr=null;throw e});
+}
+const ts=s=>`${Math.floor(s/60)}:${(s%60).toFixed(1).padStart(4,'0')}`;
+async function transcribe(it,audio,status){
+  const ctx=new AudioContext({sampleRate:16000});
+  const pcm=(await ctx.decodeAudioData(await audio.arrayBuffer())).getChannelData(0);ctx.close();
+  const pipe=await getAsr(status);
+  status(t('transcribing'));
+  const out=await pipe(pcm,{return_timestamps:true,chunk_length_s:30,stride_length_s:5,task:'transcribe'});
+  const text=(out.chunks||[]).filter(c=>c.text.trim()).map(c=>`[${ts(c.timestamp[0]||0)}] ${c.text.trim()}`).join('\n')||out.text.trim();
+  return Object.assign(it,await api('items','PATCH',{id:it.id,transcript:text}));
+}
+// Re-download a stored lesson piece by piece (same Range requests the player makes).
+async function fetchAudio(it){
+  const parts=[];
+  for(let s=0;s<it.size;){const b=await (await fetch(`/api/audio?id=${it.id}`,{headers:{range:`bytes=${s}-`}})).blob();if(!b.size)break;parts.push(b);s+=b.size}
+  return new Blob(parts,{type:it.mime});
+}
 
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!==id)}
 function applyLang(){
@@ -348,7 +386,7 @@ $('#view').onclick=async e=>{
 $('#view').onkeydown=e=>{if(e.key==='Enter'&&e.target.dataset.open)e.target.click()};
 $('#view').onchange=async e=>{
   if(e.target.id!=='file')return;
-  const files=[...e.target.files];
+  const files=[...e.target.files],done=[];
   try{
     for(const [n,f] of files.entries()){
       const prog=p=>$('#up-t').textContent=t('uploading').replace('%',`${n+1}/${files.length} · ${Math.round(p)}%`);
@@ -360,9 +398,14 @@ $('#view').onchange=async e=>{
           if(!r.ok)throw new Error((await r.json().catch(()=>({}))).error||'Upload failed ('+r.status+')');
         }
       }catch(err){await api('items','DELETE',{id:row.id}).catch(()=>{});throw err}
-      transcribe(row.id).catch(()=>{}); // runs in the background; the Transcribe button in the player retries
+      done.push([row,f]);
     }
   }catch(err){alert(err.message)}
+  // all files are saved first; transcripts follow (the Transcribe button in the player retries any that fail)
+  for(const [n,[row,f]] of done.entries()){
+    try{await transcribe(row,f,s=>$('#up-t')&&($('#up-t').textContent=`${n+1}/${done.length} · ${s}`))}
+    catch(err){alert(row.name+': '+err.message)}
+  }
   render();
 };
 
@@ -419,8 +462,9 @@ $('#p-edit').onclick=async()=>{
 };
 $('#p-tr').onclick=async()=>{
   const it=lesson,b=$('#p-tr');b.disabled=true;
-  $('#lyrics').innerHTML=`<div class="empty">${I.text}<p>${t('transcribing')}</p></div>`;
-  try{Object.assign(it,await transcribe(it.id))}catch(e){alert(e.message)}
+  const status=s=>{if(lesson===it)$('#lyrics').innerHTML=`<div class="empty">${I.text}<p>${esc(s)}</p><small>${t('keepOpen')}</small></div>`};
+  status(t('transcribing'));
+  try{await transcribe(it,await fetchAudio(it),status)}catch(e){alert(e.message)}
   b.disabled=false;if(lesson===it)renderLyrics();
 };
 document.addEventListener('keydown',e=>{

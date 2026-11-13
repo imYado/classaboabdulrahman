@@ -50,9 +50,3 @@ export const isAdmin = req => checkToken(cookie(req), process.env.ADMIN_PASSWORD
 
 export const json = (data, init) => Response.json(data, init);
 export const deny = () => json({ error: 'unauthorized' }, { status: 401 });
-
-// Whisper segments -> "[m:ss.s] text" lines the player already understands.
-export const toLines = segs => segs
-  .filter(s => s.text?.trim())
-  .map(s => `[${Math.floor(s.start / 60)}:${(s.start % 60).toFixed(1).padStart(4, '0')}] ${s.text.trim()}`)
-  .join('\n');
